@@ -1,0 +1,61 @@
+# ═══════════════════════════════════════════════════════════
+# ELIMENTE – GitHub Pages Deploy
+#
+# Dieser Workflow läuft automatisch bei jedem Push auf "main".
+# Er ersetzt die Platzhalter im Code durch die echten Keys
+# aus den GitHub Secrets und veröffentlicht die Seite.
+#
+# Einrichtung (einmalig):
+#   1. GitHub → Settings → Pages → Source: "GitHub Actions"
+#   2. GitHub → Settings → Secrets → Actions → New secret:
+#      - Name: SUPABASE_URL    | Wert: https://xxx.supabase.co
+#      - Name: SUPABASE_KEY    | Wert: eyJ...  (anon/public key)
+# ═══════════════════════════════════════════════════════════
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Manuell auslösbar
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Supabase-Keys einfügen
+        # Ersetzt die Platzhalter durch die echten Werte aus den Secrets.
+        # Die Keys sind NUR im deploierten Build enthalten, nie im Code.
+        run: |
+          sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" index.html
+          sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" index.html
+          sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" admin.html
+          sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" admin.html
+
+      - name: GitHub Pages konfigurieren
+        uses: actions/configure-pages@v5
+
+      - name: Dateien hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Auf GitHub Pages veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4

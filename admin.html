@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elimente · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Lokale Keys für Tests (wird nicht ins Repo committed, siehe .gitignore) -->
+<script src="config.local.js" onerror="/* kein config.local.js vorhanden – ok auf dem Server */"></script>
+<style>
+/* ──────────────────────────────────────────────────────
+   ELIMENTE ADMIN
+   Supabase-URL und -Key unten im <script> eintragen.
+   ────────────────────────────────────────────────────── */
+
+:root {
+  --sage: #7A8E6E;
+  --sage-light: #95A888;
+  --sage-pale: #B5C4AB;
+  --sage-muted: #C8D4BF;
+  --cream: #F6F2EC;
+  --cream-warm: #EDE7DD;
+  --cream-dark: #DDD5C8;
+  --linen: #FAF8F5;
+  --bark: #3E3832;
+  --bark-light: #5D554E;
+  --bark-muted: #7A726B;
+  --terracotta: #B87A5A;
+  --moss: #5C6E52;
+  --red: #c0392b;
+  --red-light: #f9ebea;
+  --green: #27ae60;
+  --green-light: #eafaf1;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Karla', sans-serif;
+  background: var(--linen);
+  color: var(--bark);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: 'Cormorant Garamond', serif; font-weight: 600; }
+
+/* ─── LOGIN ─── */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+}
+.login-card {
+  background: var(--linen);
+  border: 1px solid var(--cream-dark);
+  border-radius: 14px;
+  padding: 2.5rem 3rem;
+  width: 100%;
+  max-width: 380px;
+}
+.login-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--bark);
+  margin-bottom: 0.3rem;
+}
+.login-sub { font-size: 0.85rem; color: var(--bark-muted); margin-bottom: 2rem; }
+.login-card h2 { font-size: 1.4rem; margin-bottom: 1.5rem; }
+.login-form { display: flex; flex-direction: column; gap: 0.8rem; }
+.login-error { font-size: 0.82rem; color: var(--terracotta); margin-top: 0.2rem; min-height: 1.2em; }
+
+/* ─── LAYOUT ─── */
+.admin-wrap { display: none; min-height: 100vh; flex-direction: column; }
+.admin-wrap.aktiv { display: flex; }
+
+header {
+  background: var(--cream);
+  border-bottom: 1px solid var(--cream-dark);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; letter-spacing: 0.05em; text-transform: lowercase; }
+.header-logo span { font-size: 0.75rem; font-family: 'Karla', sans-serif; color: var(--bark-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-left: 0.8rem; }
+
+.nav-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--cream-dark);
+  background: var(--cream-warm);
+  padding: 0 2rem;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.8rem 1.4rem;
+  font-family: 'Karla', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bark-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--bark); }
+.tab-btn.aktiv { color: var(--sage); border-bottom-color: var(--sage); }
+
+.tab-inhalt { display: none; padding: 2rem; flex: 1; }
+.tab-inhalt.aktiv { display: block; }
+
+/* ─── GEMEINSAME ELEMENTE ─── */
+.abschnitt-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.abschnitt-kopf h2 { font-size: 1.6rem; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.65rem 1.4rem;
+  font-family: 'Karla', sans-serif;
+  font-size: 0.82rem; font-weight: 600;
+  letter-spacing: 0.04em;
+  border: none; cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.25s;
+  text-decoration: none;
+}
+.btn-primary { background: var(--sage); color: #fff; }
+.btn-primary:hover { background: var(--moss); }
+.btn-danger  { background: var(--red-light); color: var(--red); border: 1px solid #f5c6c1; }
+.btn-danger:hover { background: #f5c6c1; }
+.btn-success { background: var(--green-light); color: var(--green); border: 1px solid #a9dfbf; }
+.btn-success:hover { background: #a9dfbf; }
+.btn-ghost   { background: none; color: var(--bark-muted); border: 1px solid var(--cream-dark); }
+.btn-ghost:hover { border-color: var(--sage-pale); color: var(--bark); }
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+.btn-logout { background: none; color: var(--bark-muted); border: 1px solid var(--cream-dark); font-size: 0.78rem; }
+.btn-logout:hover { color: var(--red); border-color: var(--red); }
+
+/* ─── TABELLEN ─── */
+.tabelle-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th {
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bark-muted);
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--cream-dark);
+}
+td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--linen);
+  vertical-align: middle;
+}
+tr:hover td { background: var(--cream); }
+.badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 3px;
+}
+.badge-offen    { background: rgba(122,142,110,0.14); color: var(--sage); }
+.badge-voll     { background: rgba(184,122,90,0.12);  color: var(--terracotta); }
+.badge-abgesagt { background: rgba(62,56,50,0.08);    color: var(--bark-muted); }
+.badge-neu      { background: rgba(122,142,110,0.14); color: var(--sage); }
+.badge-bestaetigt { background: var(--green-light); color: var(--green); }
+.badge-storniert  { background: var(--red-light); color: var(--red); }
+.leer-hinweis { text-align: center; padding: 3rem; color: var(--bark-muted); font-style: italic; }
+
+/* ─── FORMULARE ─── */
+.modal-bg {
+  display: none;
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(62,56,50,0.45);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal-bg.offen { display: flex; }
+.modal {
+  background: var(--linen);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h3 { font-size: 1.4rem; margin-bottom: 1.5rem; }
+.form-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+.form-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bark-muted); margin-bottom: 0.25rem; display: block; }
+.form-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 6px;
+  font-family: 'Karla', sans-serif;
+  font-size: 0.88rem;
+  background: var(--cream);
+  color: var(--bark);
+  transition: border-color 0.25s;
+  outline: none;
+}
+.form-field:focus { border-color: var(--sage-pale); background: #fff; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+.form-fehler { font-size: 0.8rem; color: var(--terracotta); min-height: 1.2em; }
+
+/* ─── KARTEN ─── */
+.karten-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.karte {
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 10px;
+  padding: 1.4rem 1.6rem;
+}
+.karte-kopf { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; }
+.karte-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; }
+.karte-meta { font-size: 0.82rem; color: var(--bark-muted); line-height: 1.6; margin-bottom: 1rem; }
+.karte-aktionen { display: flex; gap: 0.5rem; }
+
+/* ─── FILTER ─── */
+.filter-leiste { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.filter-btn {
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 20px;
+  padding: 0.35rem 1rem;
+  font-family: 'Karla', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.aktiv {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: #fff;
+}
+
+/* ─── LADE-SPINNER ─── */
+.laden { text-align: center; padding: 3rem; color: var(--bark-muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ──────────────────────────────────────── -->
+<div class="login-wrap" id="login-view">
+  <div class="login-card">
+    <div class="login-logo">elimente<span style="display:inline-block;width:5px;height:5px;background:var(--sage);border-radius:50%;margin-left:2px;vertical-align:middle;transform:translateY(-2px)"></span></div>
+    <div class="login-sub">Admin-Bereich</div>
+    <h2>Anmelden</h2>
+    <form class="login-form" id="login-form" onsubmit="adminLogin(event)">
+      <div>
+        <label class="form-label">E-Mail</label>
+        <input class="form-field" id="login-email" type="email" placeholder="deine@email.de" required autocomplete="email">
+      </div>
+      <div>
+        <label class="form-label">Passwort</label>
+        <input class="form-field" id="login-pw" type="password" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <div class="form-fehler" id="login-error"></div>
+      <button type="submit" class="btn btn-primary" id="login-btn">Anmelden</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── ADMIN OBERFLÄCHE ────────────────────────────── -->
+<div class="admin-wrap" id="admin-view">
+
+  <header>
+    <div>
+      <span class="header-logo">elimente</span>
+      <span>Admin</span>
+    </div>
+    <button class="btn btn-logout" onclick="adminLogout()">Abmelden</button>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="tab-btn aktiv" onclick="zeigeTab('termine')">📅 Termine</button>
+    <button class="tab-btn"       onclick="zeigeTab('buchungen')">📋 Buchungen</button>
+    <button class="tab-btn"       onclick="zeigeTab('kurstypen')">🎨 Kurstypen</button>
+  </div>
+
+  <!-- TAB: TERMINE -->
+  <div class="tab-inhalt aktiv" id="tab-termine">
+    <div class="abschnitt-kopf">
+      <h2>Kurstermine</h2>
+      <button class="btn btn-primary" onclick="oeffneTerminModal()">+ Neuer Termin</button>
+    </div>
+    <div id="termine-liste"><div class="laden">Wird geladen …</div></div>
+  </div>
+
+  <!-- TAB: BUCHUNGEN -->
+  <div class="tab-inhalt" id="tab-buchungen">
+    <div class="abschnitt-kopf">
+      <h2>Buchungen</h2>
+    </div>
+    <div class="filter-leiste" id="buchungen-filter"></div>
+    <div class="tabelle-wrap" id="buchungen-liste"><div class="laden">Wird geladen …</div></div>
+  </div>
+
+  <!-- TAB: KURSTYPEN -->
+  <div class="tab-inhalt" id="tab-kurstypen">
+    <div class="abschnitt-kopf">
+      <h2>Kurstypen</h2>
+      <button class="btn btn-primary" onclick="oeffneKurstypModal()">+ Neuer Kurstyp</button>
+    </div>
+    <div class="karten-grid" id="kurstypen-liste"><div class="laden">Wird geladen …</div></div>
+  </div>
+
+</div>
+
+<!-- ── MODAL: NEUER TERMIN ─────────────────────────── -->
+<div class="modal-bg" id="termin-modal">
+  <div class="modal">
+    <h3 id="termin-modal-titel">Neuer Termin</h3>
+    <div class="form-stack">
+      <input type="hidden" id="t-id">
+      <div>
+        <label class="form-label">Kurstyp *</label>
+        <select class="form-field" id="t-typ" required></select>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Datum *</label>
+          <input class="form-field" id="t-datum" type="date" required>
+        </div>
+        <div>
+          <label class="form-label">Uhrzeit *</label>
+          <input class="form-field" id="t-uhr" type="time" value="10:00" required>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Max. Teilnehmer *</label>
+        <input class="form-field" id="t-max" type="number" min="1" max="30" value="8" required>
+      </div>
+      <div>
+        <label class="form-label">Notiz (intern, optional)</label>
+        <input class="form-field" id="t-notiz" type="text" placeholder="z.B. Raum 2, Materialien vorbereiten">
+      </div>
+      <div class="form-fehler" id="termin-fehler"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="schliesseModal('termin-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="speichereTermin()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: KURSTYP ──────────────────────────────── -->
+<div class="modal-bg" id="kurstypModal">
+  <div class="modal">
+    <h3 id="kurstypModalTitel">Neuer Kurstyp</h3>
+    <div class="form-stack">
+      <input type="hidden" id="kt-id">
+      <div>
+        <label class="form-label">Name *</label>
+        <input class="form-field" id="kt-name" type="text" placeholder="z.B. Schnupperkurs Töpfern" required>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Level</label>
+          <select class="form-field" id="kt-level">
+            <option>Anfänger</option>
+            <option>Fortgeschritten</option>
+            <option>Alle Level</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Preis *</label>
+          <input class="form-field" id="kt-preis" type="text" placeholder="z.B. 45 €" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Dauer</label>
+          <input class="form-field" id="kt-dauer" type="text" placeholder="z.B. 3 Stunden">
+        </div>
+        <div>
+          <label class="form-label">Max. Teilnehmer</label>
+          <input class="form-field" id="kt-max" type="number" min="1" max="30" value="8">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Beschreibung</label>
+        <textarea class="form-field" id="kt-beschr" rows="3" placeholder="Kurzbeschreibung für die Website"></textarea>
+      </div>
+      <div class="form-fehler" id="kurstypFehler"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="schliesseModal('kurstypModal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="speichereKurstyp()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   ✏️  HIER SUPABASE-ZUGANGSDATEN EINTRAGEN!
+   Zu finden im Supabase Dashboard:
+   Project Settings → API → Project URL & anon/public key
+   ═══════════════════════════════════════════════════════ */
+const SUPABASE_URL      = window.SUPABASE_URL      || "DEINE_SUPABASE_URL";
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "DEIN_SUPABASE_ANON_KEY";
+
+/* ═══════════════════════════════════════════════════════
+   AB HIER NICHTS ÄNDERN
+   ═══════════════════════════════════════════════════════ */
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Daten-Cache
+let _kurstypen = [];
+let _termine   = [];
+let _buchungen = [];
+let _buchFilterTermin = null;
+
+// ── AUTHENTIFIZIERUNG ────────────────────────────────────
+
+async function adminLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.textContent = 'Anmelden …';
+  btn.disabled = true;
+  errEl.textContent = '';
+
+  const { data, error } = await sb.auth.signInWithPassword({
+    email:    document.getElementById('login-email').value.trim(),
+    password: document.getElementById('login-pw').value
+  });
+
+  if (error) {
+    errEl.textContent = 'E-Mail oder Passwort falsch.';
+    btn.textContent = 'Anmelden';
+    btn.disabled = false;
+  } else {
+    zeigeAdmin();
+  }
+}
+
+async function adminLogout() {
+  await sb.auth.signOut();
+  document.getElementById('admin-view').classList.remove('aktiv');
+  document.getElementById('login-view').style.display = 'flex';
+}
+
+// Beim Laden prüfen ob schon eingeloggt
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) zeigeAdmin();
+});
+
+function zeigeAdmin() {
+  document.getElementById('login-view').style.display = 'none';
+  document.getElementById('admin-view').classList.add('aktiv');
+  ladeAlles();
+}
+
+// ── DATEN LADEN ──────────────────────────────────────────
+
+async function ladeAlles() {
+  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen()]);
+}
+
+async function ladeKurstypen() {
+  const { data } = await sb.from('kurs_typen').select('*').order('sort_order');
+  _kurstypen = data || [];
+  renderKurstypen();
+}
+
+async function ladeTermine() {
+  const { data } = await sb
+    .from('kurs_termine')
+    .select('*, kurs_typen(*)')
+    .gte('datum', new Date().toISOString().split('T')[0])
+    .order('datum');
+  _termine = data || [];
+  renderTermine();
+}
+
+async function ladeBuchungen() {
+  const { data } = await sb
+    .from('buchungen')
+    .select('*, kurs_termine(datum, uhrzeit_start, kurs_typen(name))')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  _buchungen = data || [];
+  renderBuchungenFilter();
+  renderBuchungen();
+}
+
+// ── TAB-NAVIGATION ───────────────────────────────────────
+
+function zeigeTab(name) {
+  document.querySelectorAll('.tab-inhalt').forEach(el => el.classList.remove('aktiv'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('aktiv'));
+  document.getElementById('tab-' + name).classList.add('aktiv');
+  event.target.classList.add('aktiv');
+}
+
+// ── TERMINE ──────────────────────────────────────────────
+
+function renderTermine() {
+  const el = document.getElementById('termine-liste');
+  if (!_termine.length) {
+    el.innerHTML = '<p class="leer-hinweis">Noch keine Termine angelegt.</p>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="tabelle-wrap">
+      <table>
+        <thead><tr>
+          <th>Datum</th><th>Uhrzeit</th><th>Kurstyp</th>
+          <th>Buchungen</th><th>Status</th><th>Notiz</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${_termine.map(t => `
+            <tr>
+              <td><strong>${new Date(t.datum + 'T00:00:00').toLocaleDateString('de-DE', { weekday:'short', day:'numeric', month:'short', year:'numeric' })}</strong></td>
+              <td>${t.uhrzeit_start.slice(0, 5)} Uhr</td>
+              <td>${t.kurs_typen?.name || '–'}</td>
+              <td>${t.buchungen_count} / ${t.max_teilnehmer}</td>
+              <td><span class="badge badge-${t.status}">${t.status}</span></td>
+              <td style="color:var(--bark-muted);font-size:0.82rem">${t.notiz || ''}</td>
+              <td style="display:flex;gap:0.4rem;white-space:nowrap">
+                <button class="btn btn-ghost btn-sm" onclick="bearbeiteTermin('${t.id}')">Bearbeiten</button>
+                ${t.status === 'abgesagt'
+                  ? `<button class="btn btn-success btn-sm" onclick="terminStatusAendern('${t.id}','offen')">Reaktivieren</button>`
+                  : `<button class="btn btn-danger btn-sm" onclick="terminStatusAendern('${t.id}','abgesagt')">Absagen</button>`}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function terminStatusAendern(id, neuerStatus) {
+  const bestätigt = confirm(neuerStatus === 'abgesagt'
+    ? 'Termin wirklich absagen? Bestehende Buchungen bleiben erhalten.'
+    : 'Termin wieder aktivieren?');
+  if (!bestätigt) return;
+
+  await sb.from('kurs_termine').update({ status: neuerStatus }).eq('id', id);
+  await ladeTermine();
+}
+
+function oeffneTerminModal(termin = null) {
+  // Kurstyp-Dropdown befüllen
+  const select = document.getElementById('t-typ');
+  select.innerHTML = _kurstypen
+    .filter(k => k.aktiv)
+    .map(k => `<option value="${k.id}">${k.name}</option>`)
+    .join('');
+
+  if (termin) {
+    document.getElementById('termin-modal-titel').textContent = 'Termin bearbeiten';
+    document.getElementById('t-id').value    = termin.id;
+    document.getElementById('t-typ').value   = termin.kurs_typ_id;
+    document.getElementById('t-datum').value = termin.datum;
+    document.getElementById('t-uhr').value   = termin.uhrzeit_start.slice(0, 5);
+    document.getElementById('t-max').value   = termin.max_teilnehmer;
+    document.getElementById('t-notiz').value = termin.notiz || '';
+  } else {
+    document.getElementById('termin-modal-titel').textContent = 'Neuer Termin';
+    document.getElementById('t-id').value    = '';
+    document.getElementById('t-datum').value = '';
+    document.getElementById('t-uhr').value   = '10:00';
+    document.getElementById('t-max').value   = '8';
+    document.getElementById('t-notiz').value = '';
+  }
+  document.getElementById('termin-fehler').textContent = '';
+  oeffneModal('termin-modal');
+}
+
+function bearbeiteTermin(id) {
+  const termin = _termine.find(t => t.id === id);
+  if (termin) oeffneTerminModal(termin);
+}
+
+async function speichereTermin() {
+  const id     = document.getElementById('t-id').value;
+  const errEl  = document.getElementById('termin-fehler');
+  errEl.textContent = '';
+
+  const payload = {
+    kurs_typ_id:    document.getElementById('t-typ').value,
+    datum:          document.getElementById('t-datum').value,
+    uhrzeit_start:  document.getElementById('t-uhr').value,
+    max_teilnehmer: parseInt(document.getElementById('t-max').value),
+    notiz:          document.getElementById('t-notiz').value.trim() || null
+  };
+
+  let error;
+  if (id) {
+    ({ error } = await sb.from('kurs_termine').update(payload).eq('id', id));
+  } else {
+    ({ error } = await sb.from('kurs_termine').insert(payload));
+  }
+
+  if (error) { errEl.textContent = 'Fehler: ' + error.message; return; }
+  schliesseModal('termin-modal');
+  await ladeTermine();
+}
+
+// ── BUCHUNGEN ────────────────────────────────────────────
+
+function renderBuchungenFilter() {
+  const el = document.getElementById('buchungen-filter');
+  // Eindeutige Kursnamen aus Buchungen sammeln
+  const kurse = [...new Set(_buchungen.map(b => b.kurs_termine?.kurs_typen?.name).filter(Boolean))];
+
+  el.innerHTML = `
+    <button class="filter-btn${_buchFilterTermin === null ? ' aktiv' : ''}" onclick="setBuchFilter(null)">Alle</button>
+    ${kurse.map(k => `
+      <button class="filter-btn${_buchFilterTermin === k ? ' aktiv' : ''}" onclick="setBuchFilter('${k}')">${k}</button>
+    `).join('')}`;
+}
+
+function setBuchFilter(name) {
+  _buchFilterTermin = name;
+  renderBuchungenFilter();
+  renderBuchungen();
+}
+
+function renderBuchungen() {
+  const el = document.getElementById('buchungen-liste');
+  let liste = _buchungen;
+  if (_buchFilterTermin) {
+    liste = liste.filter(b => b.kurs_termine?.kurs_typen?.name === _buchFilterTermin);
+  }
+  if (!liste.length) {
+    el.innerHTML = '<p class="leer-hinweis">Keine Buchungen gefunden.</p>';
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Datum</th><th>Kurs</th><th>Name</th><th>E-Mail</th>
+        <th>Telefon</th><th>Nachricht</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${liste.map(b => `
+          <tr>
+            <td style="white-space:nowrap">${b.kurs_termine?.datum
+              ? new Date(b.kurs_termine.datum + 'T00:00:00').toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })
+              : '–'}</td>
+            <td>${b.kurs_termine?.kurs_typen?.name || '–'}</td>
+            <td><strong>${b.name}</strong></td>
+            <td><a href="mailto:${b.email}" style="color:var(--sage)">${b.email}</a></td>
+            <td>${b.telefon || '–'}</td>
+            <td style="max-width:200px;font-size:0.82rem;color:var(--bark-muted)">${b.nachricht || ''}</td>
+            <td><span class="badge badge-${b.status}">${b.status}</span></td>
+            <td style="display:flex;gap:0.4rem;white-space:nowrap">
+              ${b.status === 'neu'
+                ? `<button class="btn btn-success btn-sm" onclick="buchungStatus('${b.id}','bestaetigt')">Bestätigen</button>` : ''}
+              ${b.status !== 'storniert'
+                ? `<button class="btn btn-danger btn-sm" onclick="buchungStatus('${b.id}','storniert')">Stornieren</button>` : ''}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function buchungStatus(id, status) {
+  await sb.from('buchungen').update({ status }).eq('id', id);
+  await ladeBuchungen();
+}
+
+// ── KURSTYPEN ────────────────────────────────────────────
+
+function renderKurstypen() {
+  const el = document.getElementById('kurstypen-liste');
+  if (!_kurstypen.length) {
+    el.innerHTML = '<p class="leer-hinweis">Noch keine Kurstypen angelegt.</p>';
+    return;
+  }
+  el.innerHTML = _kurstypen.map(k => `
+    <div class="karte">
+      <div class="karte-kopf">
+        <div class="karte-name">${k.name}</div>
+        <span class="badge badge-${k.aktiv ? 'offen' : 'abgesagt'}">${k.aktiv ? 'Aktiv' : 'Inaktiv'}</span>
+      </div>
+      <div class="karte-meta">
+        ${k.level} &nbsp;·&nbsp; ${k.duration || '–'} &nbsp;·&nbsp; ${k.price}<br>
+        Max. ${k.max_teilnehmer} Teilnehmer
+        ${k.description ? `<br><span style="margin-top:0.3rem;display:block">${k.description}</span>` : ''}
+      </div>
+      <div class="karte-aktionen">
+        <button class="btn btn-ghost btn-sm" onclick="bearbeiteKurstyp('${k.id}')">Bearbeiten</button>
+        <button class="btn btn-ghost btn-sm" onclick="kurstypAktivToggle('${k.id}', ${k.aktiv})">${k.aktiv ? 'Deaktivieren' : 'Aktivieren'}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function oeffneKurstypModal(typ = null) {
+  if (typ) {
+    document.getElementById('kurstypModalTitel').textContent = 'Kurstyp bearbeiten';
+    document.getElementById('kt-id').value    = typ.id;
+    document.getElementById('kt-name').value  = typ.name;
+    document.getElementById('kt-level').value = typ.level;
+    document.getElementById('kt-preis').value = typ.price;
+    document.getElementById('kt-dauer').value = typ.duration || '';
+    document.getElementById('kt-max').value   = typ.max_teilnehmer;
+    document.getElementById('kt-beschr').value = typ.description || '';
+  } else {
+    document.getElementById('kurstypModalTitel').textContent = 'Neuer Kurstyp';
+    document.getElementById('kt-id').value    = '';
+    document.getElementById('kt-name').value  = '';
+    document.getElementById('kt-level').value = 'Anfänger';
+    document.getElementById('kt-preis').value = '';
+    document.getElementById('kt-dauer').value = '';
+    document.getElementById('kt-max').value   = '8';
+    document.getElementById('kt-beschr').value = '';
+  }
+  document.getElementById('kurstypFehler').textContent = '';
+  oeffneModal('kurstypModal');
+}
+
+function bearbeiteKurstyp(id) {
+  const typ = _kurstypen.find(k => k.id === id);
+  if (typ) oeffneKurstypModal(typ);
+}
+
+async function speichereKurstyp() {
+  const id    = document.getElementById('kt-id').value;
+  const errEl = document.getElementById('kurstypFehler');
+  errEl.textContent = '';
+
+  const payload = {
+    name:           document.getElementById('kt-name').value.trim(),
+    level:          document.getElementById('kt-level').value,
+    price:          document.getElementById('kt-preis').value.trim(),
+    duration:       document.getElementById('kt-dauer').value.trim() || null,
+    max_teilnehmer: parseInt(document.getElementById('kt-max').value),
+    description:    document.getElementById('kt-beschr').value.trim() || null
+  };
+  if (!payload.name || !payload.price) { errEl.textContent = 'Name und Preis sind Pflichtfelder.'; return; }
+
+  let error;
+  if (id) {
+    ({ error } = await sb.from('kurs_typen').update(payload).eq('id', id));
+  } else {
+    ({ error } = await sb.from('kurs_typen').insert(payload));
+  }
+
+  if (error) { errEl.textContent = 'Fehler: ' + error.message; return; }
+  schliesseModal('kurstypModal');
+  await ladeKurstypen();
+}
+
+async function kurstypAktivToggle(id, aktuellerWert) {
+  await sb.from('kurs_typen').update({ aktiv: !aktuellerWert }).eq('id', id);
+  await ladeKurstypen();
+}
+
+// ── MODAL HELFER ─────────────────────────────────────────
+
+function oeffneModal(id) { document.getElementById(id).classList.add('offen'); }
+function schliesseModal(id) { document.getElementById(id).classList.remove('offen'); }
+
+// Klick außerhalb schließt Modal
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => {
+    if (e.target === bg) bg.classList.remove('offen');
+  });
+});
+</script>
+
+</body>
+</html>

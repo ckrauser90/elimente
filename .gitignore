@@ -1,0 +1,13 @@
+# Lokale Konfiguration – NIEMALS ins Repository!
+config.js
+config.local.js
+.env
+.env.local
+.env*.local
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/settings.json
+*.swp

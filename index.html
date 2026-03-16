@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Elemente – Keramik · Kurse · Verleih</title>
-<meta name="description" content="Elemente – Handgemachte Keramik, Töpferkurse und Töpferscheiben-Verleih">
+<title>Elimente – Keramik · Kurse · Verleih</title>
+<meta name="description" content="Elimente – Handgemachte Keramik, Töpferkurse und Töpferscheiben-Verleih">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Lokale Keys für Tests (wird nicht ins Repo committed, siehe .gitignore) -->
+<script src="config.local.js" onerror="/* kein config.local.js vorhanden – ok auf dem Server */"></script>
 <style>
 /* ═══════════════════════════════════════════
-   ELEMENTE – Töpferei Website
+   ELIMENTE – Töpferei Website
    
    FARBEN ÄNDERN? Ändere die Werte unter :root
    INHALTE ÄNDERN? Scroll runter zum <script> Tag 
@@ -707,6 +710,249 @@ section {
 .form-field::placeholder { color: var(--bark-muted); }
 textarea.form-field { resize: vertical; min-height: 130px; }
 
+/* ─── KALENDER BUCHUNG ─── */
+.kal-wrapper {
+  max-width: 1060px;
+  margin: 3rem auto 0;
+  background: var(--linen);
+  border-radius: 14px;
+  border: 1px solid rgba(122,142,110,0.1);
+  padding: 2.5rem;
+}
+.kal-wrapper-titel {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  color: var(--bark);
+  margin-bottom: 0.4rem;
+}
+.kal-wrapper-sub {
+  font-size: 0.9rem;
+  color: var(--bark-muted);
+  margin-bottom: 2rem;
+}
+
+.kal-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+/* Linke Seite: Kalender-Grid */
+.kal-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.kal-nav-btn {
+  background: none;
+  border: 1px solid var(--cream-dark);
+  border-radius: 6px;
+  width: 30px; height: 30px;
+  cursor: pointer;
+  color: var(--bark-muted);
+  font-size: 0.7rem;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.kal-nav-btn:hover {
+  border-color: var(--sage-pale);
+  color: var(--sage);
+}
+.kal-monatstitel {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--bark);
+  min-width: 155px;
+  text-align: center;
+}
+.kal-raster {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  gap: 3px;
+}
+.kal-wochentag {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bark-muted);
+  padding: 0.35rem 0;
+}
+.kal-cell {
+  width: 40px; height: 44px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: default;
+  transition: all 0.2s;
+}
+.kal-tagzahl {
+  font-size: 0.82rem;
+  line-height: 1;
+  color: var(--bark-light);
+}
+.kal-punkte {
+  display: flex;
+  gap: 2px;
+  margin-top: 3px;
+  min-height: 6px;
+}
+.kal-punkt {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--sage);
+  display: inline-block;
+}
+.kal-punkt-voll { background: var(--cream-dark); }
+.kal-cell.kal-leer { background: none; }
+.kal-cell.kal-vergangen .kal-tagzahl { color: var(--cream-dark); }
+.kal-cell.kal-heute .kal-tagzahl { font-weight: 700; color: var(--bark); }
+.kal-cell.kal-heute::before {
+  content: '';
+  position: absolute; inset: 0;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 6px;
+}
+.kal-cell.kal-frei {
+  cursor: pointer;
+  background: rgba(122,142,110,0.08);
+}
+.kal-cell.kal-frei .kal-tagzahl { color: var(--bark); font-weight: 600; }
+.kal-cell.kal-frei:hover {
+  background: rgba(122,142,110,0.18);
+  transform: scale(1.06);
+}
+.kal-cell.kal-voll { opacity: 0.45; }
+.kal-cell.kal-selected {
+  background: var(--sage) !important;
+  transform: none !important;
+}
+.kal-cell.kal-selected .kal-tagzahl { color: #fff !important; }
+.kal-cell.kal-selected .kal-punkt { background: rgba(255,255,255,0.55) !important; }
+
+.kal-legende {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  color: var(--bark-muted);
+}
+.kal-legende span { display: flex; align-items: center; gap: 0.4rem; }
+
+/* Rechte Seite: Buchungs-Panel */
+.kal-panel {
+  min-height: 300px;
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 1.8rem;
+  border: 1px solid rgba(122,142,110,0.08);
+}
+.kal-platzhalter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 260px;
+  color: var(--bark-muted);
+  gap: 0.8rem;
+}
+.kal-platzhalter-icon { font-size: 2.2rem; opacity: 0.4; }
+.kal-platzhalter p { font-size: 0.88rem; line-height: 1.65; max-width: 220px; }
+
+.kal-panel-datum {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--bark);
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--cream-dark);
+  margin-bottom: 1rem;
+}
+.kal-termin-karte {
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--cream-dark);
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.kal-termin-karte:hover { border-color: var(--sage-pale); background: var(--linen); }
+.kal-termin-karte.ist-aktiv { border-color: var(--sage); background: rgba(122,142,110,0.06); }
+.kal-termin-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--bark);
+  margin-bottom: 0.25rem;
+}
+.kal-termin-meta { font-size: 0.78rem; color: var(--bark-muted); margin-bottom: 0.25rem; }
+.kal-termin-plaetze { font-size: 0.75rem; font-weight: 600; color: var(--sage); }
+.kal-termin-plaetze.ist-voll { color: var(--bark-muted); }
+
+.kal-form-tipp {
+  font-size: 0.83rem;
+  color: var(--bark-muted);
+  font-style: italic;
+  padding: 0.8rem 0;
+}
+.kal-buchform {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.kal-buchform-titel {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--bark);
+  margin-bottom: 0.2rem;
+}
+.kal-form-zwei {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+.kal-kleingedruckt { font-size: 0.72rem; color: var(--bark-muted); }
+
+.kal-erfolg {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+.kal-erfolg-haken {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--sage);
+  color: #fff;
+  font-size: 1.6rem;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.2rem;
+}
+.kal-erfolg h3 { font-size: 1.4rem; margin-bottom: 0.8rem; }
+.kal-erfolg p { font-size: 0.88rem; line-height: 1.7; color: var(--bark-muted); margin-bottom: 0.4rem; }
+
+.kal-laden { text-align: center; padding: 3rem; color: var(--bark-muted); font-style: italic; }
+.kal-fehler { text-align: center; padding: 2rem; color: var(--terracotta); font-size: 0.88rem; }
+
+@media (max-width: 820px) {
+  .kal-layout { grid-template-columns: 1fr; }
+  .kal-raster { grid-template-columns: repeat(7, 1fr); width: 100%; }
+  .kal-cell { width: auto; }
+  .kal-form-zwei { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .kal-wrapper { padding: 1.5rem; }
+  .kal-panel { padding: 1.2rem; }
+}
+
 /* ─── FOOTER ─── */
 footer {
   padding: 2.5rem 5vw;
@@ -811,14 +1057,23 @@ footer a:hover { color: var(--moss); }
 
 const siteData = {
 
+  // ── Supabase Verbindung ──
+  // Im Repo stehen hier Platzhalter. Der GitHub Actions Workflow setzt
+  // die echten Keys beim Deploy ein (aus den GitHub Secrets).
+  // Für lokale Tests: config.local.js mit den echten Keys anlegen.
+  supabase: {
+    url:     window.SUPABASE_URL     || "DEINE_SUPABASE_URL",
+    anonKey: window.SUPABASE_ANON_KEY || "DEIN_SUPABASE_ANON_KEY"
+  },
+
   // ── Name & Slogan ──
-  name: "elemente",
+  name: "elimente",
   tagline: "Keramik · Kurse · Verleih",
 
   // ── Startseite ──
   hero: {
     label: "Handgemachte Keramik mit Herz",
-    headline: 'Erde, Wasser,\nFeuer — <span class="accent">Elemente.</span>',
+    headline: 'Erde, Wasser,\nFeuer — <span class="accent">Elimente.</span>',
     description: "Entdecke handgefertigte Keramik, lerne Töpfern in unseren Kursen oder leihe dir eine Töpferscheibe für dein eigenes Projekt.",
     buttonPrimary: "Kurse entdecken",
     buttonSecondary: "Unsere Geschichte"
@@ -827,7 +1082,7 @@ const siteData = {
   // ── Über uns ──
   about: {
     quote: "Jedes Stück erzählt eine Geschichte — geformt von Hand, gebrannt mit Leidenschaft.",
-    text1: "Willkommen bei Elemente! Hier dreht sich alles um die Freude am Gestalten mit Ton. In meiner kleinen Werkstatt entstehen Unikate — von der Tasse bis zur Vase, jedes Stück mit Liebe von Hand gefertigt.",
+    text1: "Willkommen bei Elimente! Hier dreht sich alles um die Freude am Gestalten mit Ton. In meiner kleinen Werkstatt entstehen Unikate — von der Tasse bis zur Vase, jedes Stück mit Liebe von Hand gefertigt.",
     text2: "Ob du selbst töpfern lernen möchtest, ein besonderes handgemachtes Stück suchst oder eine Töpferscheibe für dein eigenes Projekt brauchst — hier bist du richtig."
   },
 
@@ -897,7 +1152,7 @@ const siteData = {
 
   // ── Footer ──
   footer: {
-    copyright: "© 2026 Elemente Keramik",
+    copyright: "© 2026 Elimente Keramik",
     links: ["Impressum", "Datenschutz", "AGB"]
   }
 };
@@ -1014,6 +1269,13 @@ function renderSite(data) {
       `).join('')}
     </div>
   </section>
+
+  <!-- KALENDER BUCHUNG -->
+  <div class="kal-wrapper reveal">
+    <div class="kal-wrapper-titel">Termin buchen</div>
+    <div class="kal-wrapper-sub">Wähle einen grün markierten Tag im Kalender</div>
+    <div id="kurs-kalender"><div class="kal-laden">Termine werden geladen …</div></div>
+  </div>
 
   <!-- GALERIE -->
   <section id="galerie">
@@ -1146,6 +1408,250 @@ function initScrollEffects() {
 
 // Render!
 renderSite(siteData);
+
+/* ═══════════════════════════════════════════════════════
+   KALENDER & BUCHUNGSSYSTEM
+   ─────────────────────────────────────────────────────
+   Dieser Block lädt Termine aus Supabase und zeigt
+   einen buchbaren Kalender im Kurse-Bereich an.
+   ═══════════════════════════════════════════════════════ */
+
+// Zustand
+let _sb        = null;   // Supabase-Client
+let _termine   = [];     // Alle geladenen Kurstermine
+let _selDatum  = null;   // Ausgewähltes Datum (YYYY-MM-DD)
+let _selTermin = null;   // Ausgewählter Termin (Objekt)
+let _kalMonat  = new Date(); _kalMonat.setDate(1); // Erster des aktuellen Monats
+
+// Supabase initialisieren
+(function initSupabase() {
+  const cfg = siteData.supabase;
+  if (!cfg || !cfg.url || cfg.url.startsWith('DEINE')) {
+    // Noch nicht konfiguriert → freundliche Meldung
+    const el = document.getElementById('kurs-kalender');
+    if (el) el.innerHTML = '<p class="kal-fehler" style="color:var(--bark-muted);font-style:italic">Kalender wird nach der Supabase-Einrichtung aktiv.</p>';
+    return;
+  }
+  _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+  ladeUndRenderKalender();
+})();
+
+// Termine aus Supabase laden und Kalender rendern
+async function ladeUndRenderKalender() {
+  const el = document.getElementById('kurs-kalender');
+  if (!el || !_sb) return;
+
+  const heute = new Date().toISOString().split('T')[0];
+  const { data, error } = await _sb
+    .from('kurs_termine')
+    .select('*, kurs_typen(*)')
+    .gte('datum', heute)
+    .neq('status', 'abgesagt')
+    .order('datum');
+
+  if (error) {
+    el.innerHTML = '<p class="kal-fehler">Termine konnten nicht geladen werden.</p>';
+    return;
+  }
+  _termine = data || [];
+  renderKalender();
+}
+
+// ─── Kalender-Grid rendern ──────────────────────────────────
+function renderKalender() {
+  const el = document.getElementById('kurs-kalender');
+  if (!el) return;
+
+  const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const TAGE   = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+
+  const year  = _kalMonat.getFullYear();
+  const month = _kalMonat.getMonth();
+
+  // Wochentag des ersten Monatstags (Mo=0 … So=6)
+  let ersterTag = new Date(year, month, 1).getDay();
+  ersterTag = ersterTag === 0 ? 6 : ersterTag - 1;
+
+  const tageImMonat = new Date(year, month + 1, 0).getDate();
+  const heute = new Date(); heute.setHours(0, 0, 0, 0);
+
+  // Termine nach Tag gruppieren
+  const tagMap = {};
+  _termine.forEach(t => {
+    const [ty, tm, td] = t.datum.split('-').map(Number);
+    if (ty === year && tm - 1 === month) {
+      (tagMap[td] = tagMap[td] || []).push(t);
+    }
+  });
+
+  // Leere Zellen vor dem ersten Tag
+  let cells = Array(ersterTag).fill('<div class="kal-cell kal-leer"></div>').join('');
+
+  for (let tag = 1; tag <= tageImMonat; tag++) {
+    const datum    = `${year}-${String(month + 1).padStart(2, '0')}-${String(tag).padStart(2, '0')}`;
+    const datumObj = new Date(year, month, tag);
+    const istHeute    = datumObj.getTime() === heute.getTime();
+    const istVergangen= datumObj < heute;
+    const termine     = tagMap[tag] || [];
+    const hatFreie    = termine.some(t => t.status === 'offen');
+    const hatVolle    = termine.some(t => t.status === 'voll') && !hatFreie;
+    const istSelected = datum === _selDatum;
+
+    let cls = 'kal-cell';
+    if (istHeute)     cls += ' kal-heute';
+    if (istVergangen) cls += ' kal-vergangen';
+    if (termine.length && !istVergangen) cls += hatFreie ? ' kal-frei' : ' kal-voll';
+    if (istSelected)  cls += ' kal-selected';
+
+    const punkte = termine.length && !istVergangen
+      ? termine.map(t => `<span class="kal-punkt${t.status === 'voll' ? ' kal-punkt-voll' : ''}"></span>`).join('')
+      : '';
+
+    const klick = hatFreie && !istVergangen ? `onclick="kalWaehleTag('${datum}')"` : '';
+
+    cells += `<div class="${cls}" ${klick}><span class="kal-tagzahl">${tag}</span><div class="kal-punkte">${punkte}</div></div>`;
+  }
+
+  el.innerHTML = `
+    <div class="kal-layout">
+      <div>
+        <div class="kal-nav">
+          <button class="kal-nav-btn" onclick="kalNavMonat(-1)">◀</button>
+          <span class="kal-monatstitel">${MONATE[month]} ${year}</span>
+          <button class="kal-nav-btn" onclick="kalNavMonat(1)">▶</button>
+        </div>
+        <div class="kal-raster">
+          ${TAGE.map(t => `<div class="kal-wochentag">${t}</div>`).join('')}
+          ${cells}
+        </div>
+        <div class="kal-legende">
+          <span><span class="kal-punkt"></span> Plätze frei</span>
+          <span><span class="kal-punkt kal-punkt-voll"></span> Ausgebucht</span>
+        </div>
+      </div>
+      <div class="kal-panel" id="kal-panel">
+        ${_selDatum ? kalBuchungsPanel() : kalPlatzhalter()}
+      </div>
+    </div>
+  `;
+}
+
+// ─── Hilfsfunktionen ───────────────────────────────────────
+
+function kalNavMonat(dir) {
+  _kalMonat.setMonth(_kalMonat.getMonth() + dir);
+  renderKalender();
+}
+
+function kalWaehleTag(datum) {
+  _selDatum  = datum;
+  _selTermin = null;
+  renderKalender();
+}
+
+function kalWaehleTermin(terminId) {
+  _selTermin = _termine.find(t => t.id === terminId) || null;
+  // Nur Panel neu rendern, nicht den ganzen Kalender
+  const panel = document.getElementById('kal-panel');
+  if (panel) panel.innerHTML = kalBuchungsPanel();
+}
+
+// ─── Panel-Inhalte ─────────────────────────────────────────
+
+function kalPlatzhalter() {
+  return `
+    <div class="kal-platzhalter">
+      <div class="kal-platzhalter-icon">📅</div>
+      <p>Wähle einen <strong>grün markierten Tag</strong>, um einen Termin zu buchen.</p>
+    </div>`;
+}
+
+function kalBuchungsPanel() {
+  const termine = _termine.filter(t => t.datum === _selDatum && t.status === 'offen');
+  const datumStr = new Date(_selDatum + 'T00:00:00')
+    .toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  return `
+    <div>
+      <div class="kal-panel-datum">${datumStr}</div>
+      ${termine.map(t => `
+        <div class="kal-termin-karte${_selTermin?.id === t.id ? ' ist-aktiv' : ''}"
+             onclick="kalWaehleTermin('${t.id}')">
+          <div class="kal-termin-name">${t.kurs_typen.name}</div>
+          <div class="kal-termin-meta">🕐 ${t.uhrzeit_start.slice(0, 5)} Uhr &nbsp;·&nbsp; ⏱ ${t.kurs_typen.duration} &nbsp;·&nbsp; 💰 ${t.kurs_typen.price}</div>
+          <div class="kal-termin-plaetze">${t.max_teilnehmer - t.buchungen_count} / ${t.max_teilnehmer} Plätze frei</div>
+        </div>
+      `).join('')}
+      ${_selTermin && termine.find(t => t.id === _selTermin.id)
+        ? kalBuchungsFormular()
+        : `<p class="kal-form-tipp">↑ Kurs auswählen zum Buchen</p>`}
+    </div>`;
+}
+
+function kalBuchungsFormular() {
+  return `
+    <form class="kal-buchform" id="buchform" onsubmit="kalBuchungSenden(event)">
+      <div class="kal-buchform-titel">Platz reservieren</div>
+      <div class="kal-form-zwei">
+        <input class="form-field" id="b-name"  type="text"  placeholder="Dein Name *"         required autocomplete="name">
+        <input class="form-field" id="b-email" type="email" placeholder="E-Mail-Adresse *"     required autocomplete="email">
+      </div>
+      <input class="form-field" id="b-tel" type="tel" placeholder="Telefon (optional)" autocomplete="tel">
+      <textarea class="form-field" id="b-msg" placeholder="Nachricht (optional)" rows="3"></textarea>
+      <button type="submit" class="btn btn-primary" id="b-submit" style="width:fit-content">Jetzt buchen →</button>
+      <p class="kal-kleingedruckt">* Pflichtfelder · Du erhältst eine Bestätigung per E-Mail.</p>
+    </form>`;
+}
+
+// ─── Buchung absenden ──────────────────────────────────────
+
+async function kalBuchungSenden(e) {
+  e.preventDefault();
+  if (!_selTermin || !_sb) return;
+
+  const btn = document.getElementById('b-submit');
+  btn.textContent = 'Wird gesendet …';
+  btn.disabled = true;
+
+  const { data, error } = await _sb.rpc('create_buchung', {
+    p_termin_id: _selTermin.id,
+    p_name:      document.getElementById('b-name').value.trim(),
+    p_email:     document.getElementById('b-email').value.trim(),
+    p_telefon:   document.getElementById('b-tel').value.trim()  || null,
+    p_nachricht: document.getElementById('b-msg').value.trim()  || null
+  });
+
+  if (error) {
+    const msg = error.message.includes('ausgebucht')
+      ? 'Leider ist dieser Termin inzwischen ausgebucht.'
+      : 'Etwas ist schiefgelaufen — bitte versuche es erneut.';
+    btn.textContent = msg;
+    btn.style.background = 'var(--terracotta)';
+    setTimeout(() => {
+      btn.textContent = 'Jetzt buchen →';
+      btn.disabled = false;
+      btn.style.background = '';
+    }, 3500);
+  } else {
+    const name  = document.getElementById('b-name').value.trim();
+    const email = document.getElementById('b-email').value.trim();
+    const datumStr = new Date(_selDatum + 'T00:00:00')
+      .toLocaleDateString('de-DE', { day: 'numeric', month: 'long' });
+
+    document.getElementById('kal-panel').innerHTML = `
+      <div class="kal-erfolg">
+        <div class="kal-erfolg-haken">✓</div>
+        <h3>Buchung eingegangen!</h3>
+        <p>Danke, <strong>${name}</strong>! Deine Anfrage für den <strong>${datumStr}</strong> ist bei uns eingegangen.</p>
+        <p>Wir melden uns per E-Mail an <strong>${email}</strong>.</p>
+        <button class="btn btn-ghost" onclick="_selDatum=null;_selTermin=null;ladeUndRenderKalender()"
+                style="margin-top:1.2rem">Weiteren Termin buchen</button>
+      </div>`;
+
+    _selTermin = null;
+    await ladeUndRenderKalender(); // Termine neu laden (aktualisierter Zähler)
+  }
+}
 </script>
 
 </body>
