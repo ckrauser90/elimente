@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elemente – Keramik · Kurse · Verleih</title>
+<meta name="description" content="Elemente – Handgemachte Keramik, Töpferkurse und Töpferscheiben-Verleih">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   ELEMENTE – Töpferei Website
+   
+   FARBEN ÄNDERN? Ändere die Werte unter :root
+   INHALTE ÄNDERN? Scroll runter zum <script> Tag 
+   und ändere die Texte im "siteData" Objekt.
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* Hauptfarben – hier anpassen! */
+  --sage: #7A8E6E;
+  --sage-light: #95A888;
+  --sage-pale: #B5C4AB;
+  --sage-muted: #C8D4BF;
+  --cream: #F6F2EC;
+  --cream-warm: #EDE7DD;
+  --cream-dark: #DDD5C8;
+  --linen: #FAF8F5;
+  --bark: #3E3832;
+  --bark-light: #5D554E;
+  --bark-muted: #7A726B;
+  --terracotta: #B87A5A;
+  --terracotta-light: #D4A07C;
+  --moss: #5C6E52;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Karla', sans-serif;
+  background: var(--linen);
+  color: var(--bark);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--sage-muted);
+  color: var(--bark);
+}
+
+/* ─── GRAIN TEXTURE OVERLAY ─── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ─── TYPOGRAPHY ─── */
+h1, h2, h3, h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 5vw;
+  background: rgba(246,242,236,0.88);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  transition: all 0.4s ease;
+}
+nav.scrolled {
+  padding: 0.8rem 5vw;
+  box-shadow: 0 1px 0 rgba(122,142,110,0.12);
+}
+
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--bark);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+.logo-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--sage);
+  border-radius: 50%;
+  margin-left: 2px;
+  vertical-align: middle;
+  transform: translateY(-2px);
+}
+
+.nav-links {
+  display: flex; gap: 2.2rem;
+  list-style: none;
+}
+.nav-links a {
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bark-muted);
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--sage); }
+
+.hamburger {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  width: 28px; height: 20px;
+  position: relative;
+}
+.hamburger span {
+  position: absolute; left: 0;
+  width: 100%; height: 1.5px;
+  background: var(--bark);
+  transition: all 0.3s;
+}
+.hamburger span:nth-child(1) { top: 0; }
+.hamburger span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+.hamburger span:nth-child(3) { bottom: 0; }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 0 5vw;
+  gap: 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -20%; right: -10%;
+  width: 70vw; height: 70vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sage-muted) 0%, transparent 70%);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.hero-text {
+  padding-top: 5rem;
+  max-width: 560px;
+  animation: slideUp 0.9s ease-out;
+}
+
+.hero-label {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--sage);
+  margin-bottom: 1.8rem;
+}
+.hero-label::before {
+  content: '';
+  width: 28px; height: 1.5px;
+  background: var(--sage-pale);
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 5.5vw, 4.8rem);
+  line-height: 1.08;
+  color: var(--bark);
+  margin-bottom: 1.4rem;
+}
+.hero h1 .accent {
+  color: var(--sage);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.hero-desc {
+  font-size: 1.08rem;
+  line-height: 1.75;
+  color: var(--bark-muted);
+  max-width: 420px;
+  margin-bottom: 2.2rem;
+}
+
+.hero-actions { display: flex; gap: 1rem; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.85rem 1.8rem;
+  font-family: 'Karla', sans-serif;
+  font-size: 0.88rem; font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border: none; cursor: pointer;
+  transition: all 0.35s ease;
+}
+.btn-primary {
+  background: var(--sage);
+  color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px rgba(122,142,110,0.25);
+}
+.btn-primary:hover {
+  background: var(--moss);
+  box-shadow: 0 4px 20px rgba(122,142,110,0.35);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: none;
+  color: var(--bark-light);
+  padding: 0.85rem 0.5rem;
+  border-bottom: 1.5px solid var(--cream-dark);
+}
+.btn-ghost:hover {
+  color: var(--sage);
+  border-color: var(--sage-pale);
+}
+
+/* Hero visual */
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 5rem;
+  animation: fadeIn 1.2s ease-out 0.3s both;
+}
+
+.hero-organic {
+  width: 380px; height: 460px;
+  position: relative;
+}
+
+.organic-shape {
+  position: absolute;
+  border-radius: 50%;
+}
+.organic-shape-1 {
+  width: 320px; height: 380px;
+  top: 20px; left: 30px;
+  background: linear-gradient(160deg, var(--sage-pale) 0%, var(--sage) 60%, var(--moss) 100%);
+  border-radius: 52% 48% 43% 57% / 55% 45% 55% 45%;
+  animation: organicFloat 10s ease-in-out infinite;
+  box-shadow:
+    inset -15px -20px 40px rgba(92,110,82,0.25),
+    inset 10px 15px 30px rgba(181,196,171,0.3),
+    0 20px 50px rgba(122,142,110,0.15);
+}
+.organic-shape-2 {
+  width: 160px; height: 180px;
+  bottom: 0; left: 0;
+  background: linear-gradient(135deg, var(--cream-warm) 0%, var(--terracotta-light) 100%);
+  border-radius: 48% 52% 55% 45% / 50% 55% 45% 50%;
+  animation: organicFloat 8s ease-in-out infinite reverse;
+  opacity: 0.7;
+  box-shadow: 0 10px 30px rgba(184,122,90,0.12);
+}
+.organic-shape-3 {
+  width: 90px; height: 90px;
+  top: 0; right: 20px;
+  background: var(--cream-dark);
+  border-radius: 45% 55% 50% 50% / 55% 45% 50% 50%;
+  animation: organicFloat 7s ease-in-out infinite 1s;
+  opacity: 0.5;
+}
+
+.hero-emoji {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.1));
+  z-index: 2;
+}
+
+@keyframes organicFloat {
+  0%, 100% { border-radius: 52% 48% 43% 57% / 55% 45% 55% 45%; transform: translate(0, 0); }
+  33% { border-radius: 48% 52% 50% 50% / 45% 55% 50% 50%; transform: translate(-5px, 8px); }
+  66% { border-radius: 55% 45% 48% 52% / 50% 50% 55% 45%; transform: translate(5px, -5px); }
+}
+
+/* ─── SECTION SHARED ─── */
+section {
+  padding: 7rem 5vw;
+}
+
+.section-intro {
+  max-width: 560px;
+  margin-bottom: 4rem;
+}
+.section-intro.centered {
+  text-align: center;
+  margin-left: auto; margin-right: auto;
+}
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--sage);
+  margin-bottom: 1rem;
+}
+.section-label::before {
+  content: '';
+  width: 20px; height: 1.5px;
+  background: var(--sage-pale);
+}
+
+.section-intro h2 {
+  font-size: clamp(2rem, 3.5vw, 2.8rem);
+  line-height: 1.15;
+  color: var(--bark);
+  margin-bottom: 1rem;
+}
+
+.section-intro p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--bark-muted);
+}
+
+/* ─── ÜBER UNS ─── */
+#ueber {
+  background: var(--cream);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 5rem;
+  max-width: 1060px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.about-visual {
+  position: relative;
+  height: 400px;
+}
+.about-blob {
+  width: 100%; height: 100%;
+  background: linear-gradient(145deg, var(--sage-muted), var(--sage-pale));
+  border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem;
+  box-shadow: 0 20px 50px rgba(122,142,110,0.12);
+}
+
+.about-text blockquote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--bark-light);
+  border-left: 2px solid var(--sage-pale);
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.about-text p {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--bark-muted);
+  margin-bottom: 1rem;
+}
+
+/* ─── ANGEBOTE CARDS ─── */
+#angebote { background: var(--linen); }
+
+.offer-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+.offer-card {
+  background: var(--cream);
+  border: 1px solid rgba(122,142,110,0.08);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  position: relative;
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+.offer-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--sage-pale), var(--sage));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.offer-card:hover::before { transform: scaleX(1); }
+.offer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(62,56,50,0.07);
+}
+
+.offer-emoji {
+  font-size: 2rem;
+  margin-bottom: 1.2rem;
+  display: block;
+}
+
+.offer-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.7rem;
+  color: var(--bark);
+}
+.offer-card p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--bark-muted);
+  margin-bottom: 1.2rem;
+}
+
+.card-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--sage);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: gap 0.3s;
+}
+.card-link:hover { gap: 0.8rem; }
+
+/* ─── KURSE ─── */
+#kurse { background: var(--cream); }
+
+.kurs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+.kurs-item {
+  background: var(--linen);
+  border-radius: 10px;
+  padding: 2rem;
+  border: 1px solid transparent;
+  transition: all 0.35s ease;
+}
+.kurs-item:hover {
+  border-color: var(--sage-pale);
+  box-shadow: 0 8px 28px rgba(62,56,50,0.06);
+}
+
+.kurs-tags {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.65rem;
+  border-radius: 3px;
+}
+.tag-level { background: rgba(122,142,110,0.14); color: var(--sage); }
+.tag-advanced { background: rgba(184,122,90,0.12); color: var(--terracotta); }
+.tag-date { background: rgba(62,56,50,0.06); color: var(--bark-muted); }
+
+.kurs-item h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--bark);
+}
+.kurs-item > p {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--bark-muted);
+}
+.kurs-price {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cream-dark);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--moss);
+}
+.kurs-price small {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--bark-muted);
+}
+
+/* ─── GALERIE ─── */
+#galerie { background: var(--linen); }
+
+.gallery-masonry {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 180px;
+  gap: 0.8rem;
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+.gallery-cell {
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  transition: transform 0.35s, box-shadow 0.35s;
+}
+.gallery-cell:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 30px rgba(62,56,50,0.1);
+  z-index: 2;
+}
+
+.gallery-cell:nth-child(1) { grid-column: span 2; grid-row: span 2; font-size: 4rem; background: linear-gradient(150deg, var(--sage-pale), var(--sage)); }
+.gallery-cell:nth-child(2) { background: linear-gradient(135deg, var(--cream-warm), var(--terracotta-light)); }
+.gallery-cell:nth-child(3) { background: linear-gradient(135deg, var(--sage-muted), var(--sage-pale)); }
+.gallery-cell:nth-child(4) { grid-row: span 2; background: linear-gradient(180deg, var(--cream-dark), var(--sage-pale)); font-size: 3rem; }
+.gallery-cell:nth-child(5) { background: linear-gradient(135deg, var(--terracotta-light), var(--terracotta)); }
+.gallery-cell:nth-child(6) { background: linear-gradient(135deg, var(--sage), var(--moss)); }
+
+.gallery-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1rem;
+  background: linear-gradient(transparent, rgba(62,56,50,0.6));
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.3s;
+}
+.gallery-cell:hover .gallery-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gallery-hint {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: var(--bark-muted);
+  font-style: italic;
+}
+
+/* ─── VERLEIH ─── */
+#verleih { background: var(--cream); }
+
+.rental-card {
+  max-width: 860px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3rem;
+  align-items: center;
+  background: var(--linen);
+  border-radius: 14px;
+  padding: 3rem;
+  border: 1px solid rgba(122,142,110,0.1);
+}
+
+.rental-visual {
+  width: 150px; height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage-muted), var(--sage));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.5rem;
+  box-shadow:
+    0 12px 32px rgba(122,142,110,0.18),
+    inset 0 -4px 12px rgba(92,110,82,0.15);
+  flex-shrink: 0;
+}
+
+.rental-body h3 {
+  font-size: 1.6rem;
+  margin-bottom: 0.6rem;
+}
+.rental-body > p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--bark-muted);
+  margin-bottom: 1.5rem;
+}
+
+.rental-pricing {
+  display: flex; gap: 2rem; flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.rental-price-item {
+  display: flex; flex-direction: column;
+}
+.rental-price-item .amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--moss);
+}
+.rental-price-item .period {
+  font-size: 0.78rem;
+  color: var(--bark-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rental-perks {
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.perk {
+  font-size: 0.85rem;
+  color: var(--bark-light);
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.perk::before {
+  content: '✓';
+  color: var(--sage);
+  font-weight: 700;
+}
+
+/* ─── KONTAKT ─── */
+#kontakt { background: var(--linen); }
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 4rem;
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+.contact-details h3 {
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+}
+
+.contact-line {
+  display: flex; align-items: flex-start; gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+.contact-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.contact-line .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bark-muted);
+  margin-bottom: 0.15rem;
+}
+.contact-line .value {
+  font-size: 0.95rem;
+  color: var(--bark);
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.form-field {
+  padding: 0.85rem 1.1rem;
+  border: 1.5px solid var(--cream-dark);
+  border-radius: 6px;
+  font-family: 'Karla', sans-serif;
+  font-size: 0.9rem;
+  background: var(--cream);
+  color: var(--bark);
+  transition: border-color 0.3s, background 0.3s;
+  outline: none;
+}
+.form-field:focus {
+  border-color: var(--sage-pale);
+  background: #fff;
+}
+.form-field::placeholder { color: var(--bark-muted); }
+textarea.form-field { resize: vertical; min-height: 130px; }
+
+/* ─── FOOTER ─── */
+footer {
+  padding: 2.5rem 5vw;
+  border-top: 1px solid var(--cream-dark);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--bark-muted);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+footer a {
+  color: var(--sage);
+  text-decoration: none;
+  margin-left: 1.5rem;
+  transition: color 0.3s;
+}
+footer a:hover { color: var(--moss); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 960px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding-top: 7rem;
+    padding-bottom: 3rem;
+  }
+  .hero-visual { display: none; }
+  .offer-cards { grid-template-columns: 1fr; }
+  .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .about-visual { height: 260px; }
+  .gallery-masonry {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 160px;
+  }
+  .gallery-cell:nth-child(4) { grid-row: span 1; }
+  .rental-card { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .rental-pricing { justify-content: center; }
+  .rental-perks { justify-content: center; }
+  .contact-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .hamburger { display: block; }
+  nav.mobile-open .nav-links {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: var(--cream);
+    padding: 1.5rem 5vw 2rem;
+    gap: 1.2rem;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+  }
+  section { padding: 4.5rem 5vw; }
+  .gallery-masonry {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 140px;
+  }
+  .gallery-cell:nth-child(1) { grid-column: span 2; grid-row: span 1; }
+  .hero-actions { flex-direction: column; align-items: flex-start; }
+  footer { flex-direction: column; text-align: center; }
+  footer a { margin: 0 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   ✏️  HIER INHALTE ÄNDERN!
+   
+   Deine Frau kann hier ganz einfach Texte, Preise 
+   und Kontaktdaten anpassen. Einfach den Text 
+   zwischen den Anführungszeichen "..." ändern 
+   und die Datei speichern.
+   ═══════════════════════════════════════════════════════ */
+
+const siteData = {
+
+  // ── Name & Slogan ──
+  name: "elemente",
+  tagline: "Keramik · Kurse · Verleih",
+
+  // ── Startseite ──
+  hero: {
+    label: "Handgemachte Keramik mit Herz",
+    headline: 'Erde, Wasser,\nFeuer — <span class="accent">Elemente.</span>',
+    description: "Entdecke handgefertigte Keramik, lerne Töpfern in unseren Kursen oder leihe dir eine Töpferscheibe für dein eigenes Projekt.",
+    buttonPrimary: "Kurse entdecken",
+    buttonSecondary: "Unsere Geschichte"
+  },
+
+  // ── Über uns ──
+  about: {
+    quote: "Jedes Stück erzählt eine Geschichte — geformt von Hand, gebrannt mit Leidenschaft.",
+    text1: "Willkommen bei Elemente! Hier dreht sich alles um die Freude am Gestalten mit Ton. In meiner kleinen Werkstatt entstehen Unikate — von der Tasse bis zur Vase, jedes Stück mit Liebe von Hand gefertigt.",
+    text2: "Ob du selbst töpfern lernen möchtest, ein besonderes handgemachtes Stück suchst oder eine Töpferscheibe für dein eigenes Projekt brauchst — hier bist du richtig."
+  },
+
+  // ── Kurse (beliebig viele hinzufügen oder entfernen!) ──
+  kurse: [
+    {
+      name: "Schnupperkurs Töpfern",
+      level: "Anfänger",
+      schedule: "Samstags",
+      description: "Der perfekte Einstieg: Lerne die Grundlagen an der Scheibe und nimm dein erstes Stück mit nach Hause.",
+      price: "45 €",
+      duration: "3 Stunden"
+    },
+    {
+      name: "Grundkurs Drehen",
+      level: "Anfänger",
+      schedule: "4 Abende",
+      description: "In vier Abenden lernst du Zentrieren, Hochziehen und Formen. Glasur und Brennen inklusive!",
+      price: "160 €",
+      duration: "4 × 2,5 Std."
+    },
+    {
+      name: "Glasur-Workshop",
+      level: "Fortgeschritten",
+      schedule: "Auf Anfrage",
+      description: "Experimentiere mit verschiedenen Glasuren, Techniken und Brennverfahren für einzigartige Oberflächen.",
+      price: "85 €",
+      duration: "4 Stunden"
+    },
+    {
+      name: "Aufbautechnik",
+      level: "Alle Level",
+      schedule: "Sonntags",
+      description: "Ohne Scheibe — mit Platten, Wülsten und freiem Formen gestaltest du ganz individuelle Objekte.",
+      price: "55 €",
+      duration: "3,5 Stunden"
+    }
+  ],
+
+  // ── Galerie-Kategorien ──
+  galerie: [
+    { emoji: "🏺", label: "Vasen" },
+    { emoji: "☕", label: "Tassen & Becher" },
+    { emoji: "🥣", label: "Schalen" },
+    { emoji: "🪴", label: "Pflanzentöpfe" },
+    { emoji: "🕯️", label: "Kerzenhalter" },
+    { emoji: "✨", label: "Dekoration" }
+  ],
+  galerieHint: "Hier werden bald echte Fotos deiner Werke stehen — lade einfach Bilder hoch!",
+
+  // ── Töpferscheiben-Verleih ──
+  verleih: {
+    title: "Professionelle Töpferscheibe",
+    description: "Unsere Scheiben sind ideal für zuhause — kompakt, leise und leistungsstark. Lieferung und Abholung inklusive im näheren Umkreis.",
+    priceDay: "35 €",
+    priceWeek: "120 €",
+    perks: ["Lieferung & Abholung", "Einweisung inklusive", "Werkzeug-Set dabei", "Ton auf Wunsch"]
+  },
+
+  // ── Kontaktdaten ──
+  kontakt: {
+    adresse: "Musterstraße 12, 12345 Musterstadt",
+    email: "hallo@elemente-keramik.de",
+    telefon: "0123 – 456 789 0",
+    instagram: "@elemente.keramik"
+  },
+
+  // ── Footer ──
+  footer: {
+    copyright: "© 2026 Elemente Keramik",
+    links: ["Impressum", "Datenschutz", "AGB"]
+  }
+};
+
+
+/* ═══════════════════════════════════════════════════════
+   AB HIER NICHTS ÄNDERN (außer du weißt was du tust!)
+   ═══════════════════════════════════════════════════════ */
+
+function renderSite(data) {
+  const d = data;
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+  <!-- NAV -->
+  <nav id="mainNav">
+    <div class="logo">${d.name}<span class="logo-dot"></span></div>
+    <ul class="nav-links">
+      <li><a href="#ueber">Über uns</a></li>
+      <li><a href="#angebote">Angebote</a></li>
+      <li><a href="#kurse">Kurse</a></li>
+      <li><a href="#galerie">Galerie</a></li>
+      <li><a href="#verleih">Verleih</a></li>
+      <li><a href="#kontakt">Kontakt</a></li>
+    </ul>
+    <button class="hamburger" aria-label="Menü" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-label">${d.hero.label}</div>
+      <h1>${d.hero.headline.replace(/\n/g, '<br>')}</h1>
+      <p class="hero-desc">${d.hero.description}</p>
+      <div class="hero-actions">
+        <a href="#kurse" class="btn btn-primary">${d.hero.buttonPrimary} →</a>
+        <a href="#ueber" class="btn btn-ghost">${d.hero.buttonSecondary}</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-organic">
+        <div class="organic-shape organic-shape-1"></div>
+        <div class="organic-shape organic-shape-2"></div>
+        <div class="organic-shape organic-shape-3"></div>
+        <div class="hero-emoji">🏺</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÜBER UNS -->
+  <section id="ueber">
+    <div class="about-grid">
+      <div class="about-visual reveal">
+        <div class="about-blob">🤲</div>
+      </div>
+      <div class="about-text reveal">
+        <div class="section-label">Über uns</div>
+        <blockquote>${d.about.quote}</blockquote>
+        <p>${d.about.text1}</p>
+        <p>${d.about.text2}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANGEBOTE -->
+  <section id="angebote">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Unser Angebot</div>
+      <h2>Drei Wege zur Keramik</h2>
+      <p>Ob kaufen, lernen oder selbst machen — finde deinen Weg.</p>
+    </div>
+    <div class="offer-cards">
+      <div class="offer-card reveal">
+        <span class="offer-emoji">🎨</span>
+        <h3>Keramik kaufen</h3>
+        <p>Jedes Stück ein Unikat — handgedreht und liebevoll glasiert. Von Tassen bis zu Vasen und Dekoration.</p>
+        <a href="#galerie" class="card-link">Zur Galerie →</a>
+      </div>
+      <div class="offer-card reveal">
+        <span class="offer-emoji">🤲</span>
+        <h3>Kurse besuchen</h3>
+        <p>In kleinen Gruppen lernst du die Kunst des Töpferns — ob Anfänger oder Fortgeschrittene.</p>
+        <a href="#kurse" class="card-link">Kursangebot →</a>
+      </div>
+      <div class="offer-card reveal">
+        <span class="offer-emoji">⚙️</span>
+        <h3>Scheibe leihen</h3>
+        <p>Du hast Erfahrung? Leihe eine professionelle Töpferscheibe und arbeite flexibel bei dir zuhause.</p>
+        <a href="#verleih" class="card-link">Mehr erfahren →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- KURSE -->
+  <section id="kurse">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Kurse</div>
+      <h2>Töpfern lernen</h2>
+      <p>Kleine Gruppen, persönliche Betreuung und jede Menge Spaß mit Ton.</p>
+    </div>
+    <div class="kurs-list">
+      ${d.kurse.map(k => `
+        <div class="kurs-item reveal">
+          <div class="kurs-tags">
+            <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : 'tag-level'}">${k.level}</span>
+            <span class="tag tag-date">📅 ${k.schedule}</span>
+          </div>
+          <h3>${k.name}</h3>
+          <p>${k.description}</p>
+          <div class="kurs-price">${k.price} <small>/ ${k.duration}</small></div>
+        </div>
+      `).join('')}
+    </div>
+  </section>
+
+  <!-- GALERIE -->
+  <section id="galerie">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Galerie</div>
+      <h2>Handgefertigte Stücke</h2>
+      <p>Ein Einblick in die Welt unserer Keramik.</p>
+    </div>
+    <div class="gallery-masonry reveal">
+      ${d.galerie.map(g => `
+        <div class="gallery-cell">
+          ${g.emoji}
+          <div class="gallery-label">${g.label}</div>
+        </div>
+      `).join('')}
+    </div>
+    <p class="gallery-hint reveal">${d.galerieHint}</p>
+  </section>
+
+  <!-- VERLEIH -->
+  <section id="verleih">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Verleih</div>
+      <h2>Töpferscheibe leihen</h2>
+      <p>Dein Atelier bei dir zuhause.</p>
+    </div>
+    <div class="rental-card reveal">
+      <div class="rental-visual">🔄</div>
+      <div class="rental-body">
+        <h3>${d.verleih.title}</h3>
+        <p>${d.verleih.description}</p>
+        <div class="rental-pricing">
+          <div class="rental-price-item">
+            <span class="amount">${d.verleih.priceDay}</span>
+            <span class="period">Pro Tag</span>
+          </div>
+          <div class="rental-price-item">
+            <span class="amount">${d.verleih.priceWeek}</span>
+            <span class="period">Pro Woche</span>
+          </div>
+        </div>
+        <div class="rental-perks">
+          ${d.verleih.perks.map(p => `<span class="perk">${p}</span>`).join('')}
+        </div>
+        <a href="#kontakt" class="btn btn-primary">Jetzt anfragen →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONTAKT -->
+  <section id="kontakt">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Kontakt</div>
+      <h2>Schreib uns</h2>
+      <p>Wir freuen uns auf deine Nachricht.</p>
+    </div>
+    <div class="contact-layout reveal">
+      <div class="contact-details">
+        <h3>So erreichst du uns</h3>
+        <div class="contact-line">
+          <div class="contact-icon">📍</div>
+          <div><div class="label">Adresse</div><div class="value">${d.kontakt.adresse}</div></div>
+        </div>
+        <div class="contact-line">
+          <div class="contact-icon">📧</div>
+          <div><div class="label">E-Mail</div><div class="value">${d.kontakt.email}</div></div>
+        </div>
+        <div class="contact-line">
+          <div class="contact-icon">📞</div>
+          <div><div class="label">Telefon</div><div class="value">${d.kontakt.telefon}</div></div>
+        </div>
+        <div class="contact-line">
+          <div class="contact-icon">📸</div>
+          <div><div class="label">Instagram</div><div class="value">${d.kontakt.instagram}</div></div>
+        </div>
+      </div>
+      <div class="form-stack">
+        <input class="form-field" type="text" placeholder="Dein Name">
+        <input class="form-field" type="email" placeholder="Deine E-Mail-Adresse">
+        <input class="form-field" type="text" placeholder="Betreff (z.B. Kursanfrage, Verleih …)">
+        <textarea class="form-field" placeholder="Deine Nachricht"></textarea>
+        <button class="btn btn-primary" style="width:fit-content" onclick="alert('Danke für deine Nachricht! (In der fertigen Seite wird das Formular per Formspree o.ä. versendet.)')">Nachricht senden →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <span class="logo" style="font-size:1.2rem">${d.name}<span class="logo-dot"></span></span>
+      &nbsp;&nbsp;${d.footer.copyright}
+    </div>
+    <div>${d.footer.links.map(l => `<a href="#">${l}</a>`).join('')}</div>
+  </footer>
+  `;
+
+  // Re-init observers
+  initScrollEffects();
+}
+
+function initScrollEffects() {
+  // Nav scroll
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // Reveal on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transitionDelay = `${(i % 4) * 0.08}s`;
+    observer.observe(el);
+  });
+
+  // Close mobile nav on link click
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.addEventListener('click', () => {
+      document.getElementById('mainNav').classList.remove('mobile-open');
+    });
+  });
+}
+
+// Render!
+renderSite(siteData);
+</script>
+
+</body>
+</html>
