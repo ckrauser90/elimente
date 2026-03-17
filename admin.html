@@ -1243,6 +1243,23 @@ async function speichereKurstyp() {
 }
 
 async function kurstypAktivToggle(id, aktuellerWert) {
+  // Beim Deaktivieren: prüfen ob noch zukünftige Termine existieren
+  if (aktuellerWert) {
+    const heute = new Date().toISOString().split('T')[0];
+    const { data: termine } = await sb.from('kurs_termine')
+      .select('id, datum, buchungen_count')
+      .eq('kurs_typ_id', id)
+      .gte('datum', heute)
+      .neq('status', 'abgesagt');
+
+    if (termine && termine.length > 0) {
+      const totalBuchungen = termine.reduce((s, t) => s + (t.buchungen_count || 0), 0);
+      const warnMsg = totalBuchungen > 0
+        ? `Dieser Kurstyp hat noch ${termine.length} zukünftige(n) Termin(e) mit ${totalBuchungen} Buchung(en).\n\nDer Kurs wird deaktiviert und auf der Website nicht mehr angezeigt.\nDie Termine und Buchungen bleiben erhalten.\n\nTrotzdem deaktivieren?`
+        : `Dieser Kurstyp hat noch ${termine.length} zukünftige(n) Termin(e).\n\nDer Kurs wird auf der Website nicht mehr angezeigt.\n\nTrotzdem deaktivieren?`;
+      if (!confirm(warnMsg)) return;
+    }
+  }
   await sb.from('kurs_typen').update({ aktiv: !aktuellerWert }).eq('id', id);
   await ladeKurstypen();
 }
