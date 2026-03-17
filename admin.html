@@ -300,6 +300,7 @@ tr:hover td { background: var(--cream); }
   <div class="nav-tabs">
     <button class="tab-btn aktiv" onclick="zeigeTab('termine')">📅 Termine</button>
     <button class="tab-btn"       onclick="zeigeTab('buchungen')">📋 Buchungen</button>
+    <button class="tab-btn"       onclick="zeigeTab('verleih')">🔄 Verleih</button>
     <button class="tab-btn"       onclick="zeigeTab('kurstypen')">🎨 Kurstypen</button>
   </div>
 
@@ -319,6 +320,14 @@ tr:hover td { background: var(--cream); }
     </div>
     <div class="filter-leiste" id="buchungen-filter"></div>
     <div class="tabelle-wrap" id="buchungen-liste"><div class="laden">Wird geladen …</div></div>
+  </div>
+
+  <!-- TAB: VERLEIH -->
+  <div class="tab-inhalt" id="tab-verleih">
+    <div class="abschnitt-kopf">
+      <h2>Verleih-Buchungen</h2>
+    </div>
+    <div class="tabelle-wrap" id="verleih-liste"><div class="laden">Wird geladen …</div></div>
   </div>
 
   <!-- TAB: KURSTYPEN -->
@@ -481,7 +490,7 @@ function zeigeAdmin() {
 // ── DATEN LADEN ──────────────────────────────────────────
 
 async function ladeAlles() {
-  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen()]);
+  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen(), ladeVerleihBuchungen()]);
 }
 
 async function ladeKurstypen() {
@@ -623,6 +632,60 @@ async function speichereTermin() {
   if (error) { errEl.textContent = 'Fehler: ' + error.message; return; }
   schliesseModal('termin-modal');
   await ladeTermine();
+}
+
+// ── VERLEIH ──────────────────────────────────────────────
+
+let _verleihBuchungen = [];
+
+async function ladeVerleihBuchungen() {
+  const { data } = await sb
+    .from('verleih_buchungen')
+    .select('*')
+    .order('start_datum');
+  _verleihBuchungen = data || [];
+  renderVerleihBuchungen();
+}
+
+function renderVerleihBuchungen() {
+  const el = document.getElementById('verleih-liste');
+  if (!_verleihBuchungen.length) {
+    el.innerHTML = '<p class="leer-hinweis">Noch keine Verleih-Buchungen.</p>';
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Von</th><th>Bis</th><th>Tage</th><th>Name</th><th>E-Mail</th>
+        <th>Telefon</th><th>Nachricht</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${_verleihBuchungen.map(b => {
+          const tage = Math.round((new Date(b.end_datum) - new Date(b.start_datum)) / 86400000);
+          return `<tr>
+            <td><strong>${new Date(b.start_datum + 'T00:00:00').toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })}</strong></td>
+            <td>${new Date(b.end_datum + 'T00:00:00').toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })}</td>
+            <td>${tage} Tage</td>
+            <td><strong>${b.name}</strong></td>
+            <td><a href="mailto:${b.email}" style="color:var(--sage)">${b.email}</a></td>
+            <td>${b.telefon || '–'}</td>
+            <td style="max-width:180px;font-size:0.82rem;color:var(--bark-muted)">${b.nachricht || ''}</td>
+            <td><span class="badge badge-${b.status}">${b.status}</span></td>
+            <td style="display:flex;gap:0.4rem;white-space:nowrap">
+              ${b.status === 'neu'
+                ? `<button class="btn btn-success btn-sm" onclick="verleihStatus('${b.id}','bestaetigt')">Bestätigen</button>` : ''}
+              ${b.status !== 'storniert'
+                ? `<button class="btn btn-danger btn-sm" onclick="verleihStatus('${b.id}','storniert')">Stornieren</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function verleihStatus(id, status) {
+  await sb.from('verleih_buchungen').update({ status }).eq('id', id);
+  await ladeVerleihBuchungen();
 }
 
 // ── BUCHUNGEN ────────────────────────────────────────────
