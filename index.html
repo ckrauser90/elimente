@@ -1265,7 +1265,7 @@ function renderSite(data) {
   <section class="hero">
     <div class="hero-text">
       <div class="hero-label">${d.hero.label}</div>
-      <h1>${d.hero.headline.replace(/\n/g, '<br>')}</h1>
+      <h1>${d.hero.headline.replace(/\\n|\n/g, '<br>')}</h1>
       <p class="hero-desc">${d.hero.description}</p>
       <div class="hero-actions">
         <a href="#kurse" class="btn btn-primary">${d.hero.buttonPrimary} →</a>
