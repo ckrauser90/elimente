@@ -712,6 +712,67 @@ section {
   font-weight: 700;
 }
 
+/* ─── ETSY SHOP ─── */
+#shop { background: var(--cream); }
+.etsy-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+.etsy-card {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(62,56,50,0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: block;
+}
+.etsy-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 24px rgba(62,56,50,0.12);
+}
+.etsy-card-img {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--cream-dark);
+}
+.etsy-card-img img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+.etsy-card:hover .etsy-card-img img { transform: scale(1.04); }
+.etsy-card-img-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; aspect-ratio: 1;
+}
+.etsy-card-body { padding: 0.9rem 1rem; }
+.etsy-card-name {
+  font-size: 0.88rem;
+  color: var(--bark);
+  line-height: 1.4;
+  margin-bottom: 0.4rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.etsy-card-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: var(--sage);
+  font-weight: 600;
+}
+@media (max-width: 960px) {
+  .etsy-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .etsy-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+}
+
 /* ─── STANDORT ─── */
 #standort { background: var(--linen); }
 .standort-grid {
@@ -1516,6 +1577,37 @@ const siteData = {
    AB HIER NICHTS ÄNDERN (außer du weißt was du tust!)
    ═══════════════════════════════════════════════════════ */
 
+function renderEtsyShop() {
+  const shopUrl = 'https://www.etsy.com/de/shop/ELIMENTE';
+  if (!_etsyDaten.length) {
+    return `<div style="text-align:center;padding:1rem 0">
+      <p style="color:var(--bark-muted);margin-bottom:1.5rem">Besuche meinen Etsy Shop für alle aktuellen Stücke.</p>
+      <a href="${shopUrl}" target="_blank" rel="noopener" class="btn btn-primary">Zum Etsy Shop →</a>
+    </div>`;
+  }
+  const karten = _etsyDaten.slice(0, 8).map(p => {
+    const img   = p.Images?.[0]?.url_570xN || '';
+    const preis = p.price
+      ? (p.price.amount / p.price.divisor).toFixed(2).replace('.', ',') + '\u00a0' + p.price.currency_code
+      : '';
+    return `
+      <a href="${p.url}" target="_blank" rel="noopener" class="etsy-card">
+        ${img
+          ? `<div class="etsy-card-img"><img src="${img}" alt="${p.title}" loading="lazy"></div>`
+          : `<div class="etsy-card-img etsy-card-img-placeholder">🏺</div>`}
+        <div class="etsy-card-body">
+          <div class="etsy-card-name">${p.title}</div>
+          ${preis ? `<div class="etsy-card-price">${preis}</div>` : ''}
+        </div>
+      </a>`;
+  }).join('');
+  return `
+    <div class="etsy-grid">${karten}</div>
+    <div style="text-align:center;margin-top:2.5rem">
+      <a href="${shopUrl}" target="_blank" rel="noopener" class="btn btn-primary">Alle Artikel im Shop →</a>
+    </div>`;
+}
+
 function renderSite(data) {
   const d = data;
   const app = document.getElementById('app');
@@ -1529,6 +1621,7 @@ function renderSite(data) {
       <li><a href="#angebote">Angebote</a></li>
       <li><a href="#kurse">Kurse</a></li>
       <li><a href="#galerie">Galerie</a></li>
+      <li><a href="#shop">Shop</a></li>
       <li><a href="#verleih">Verleih</a></li>
       <li><a href="#standort">Standort</a></li>
     </ul>
@@ -1688,6 +1781,16 @@ function renderSite(data) {
     ${_bilder.galerie.length === 0 ? `<p class="gallery-hint reveal">${d.galerieHint}</p>` : ''}
   </section>
 
+  <!-- ETSY SHOP -->
+  <section id="shop">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Online Shop</div>
+      <h2>Keramik kaufen</h2>
+      <p>Handgefertigte Einzelstücke aus meiner Werkstatt — direkt auf Etsy bestellen.</p>
+    </div>
+    <div class="reveal">${renderEtsyShop()}</div>
+  </section>
+
   <!-- VERLEIH -->
   <section id="verleih">
     <div class="section-intro centered reveal">
@@ -1806,6 +1909,8 @@ let _kurstypen       = [];
 let _filterKurstyp   = null; // null = alle, oder kurstyp-ID
 let _termine         = [];
 let _verleihBuchungen= [];
+// Etsy-Produkte: beim Deploy durch GitHub Actions injiziert (build-time)
+let _etsyDaten = ("ETSY_LISTINGS_PLACEHOLDER".results || []);
 let _selDatum        = null;
 let _selTermin       = null;
 let _verleihStart    = null;

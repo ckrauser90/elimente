@@ -54,6 +54,32 @@ jobs:
           sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" agb.html
           sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" agb.html
 
+      - name: Etsy Produkte laden
+        # Ruft die aktuellen Listings vom Etsy Shop ab und injiziert sie als
+        # JSON-Objekt in index.html (ersetzt den Platzhalter "ETSY_LISTINGS_PLACEHOLDER").
+        # API Key: GitHub → Settings → Secrets → ETSY_API_KEY (Keystring aus etsy.com/developers)
+        env:
+          ETSY_API_KEY: ${{ secrets.ETSY_API_KEY }}
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request, json, os
+          key = os.environ.get('ETSY_API_KEY', '')
+          url = 'https://openapi.etsy.com/v3/application/shops/ELIMENTE/listings/active?limit=8&includes=Images'
+          req = urllib.request.Request(url, headers={'x-api-key': key})
+          try:
+              with urllib.request.urlopen(req, timeout=15) as r:
+                  data = r.read().decode('utf-8')
+              json.loads(data)  # Validierung: kein kaputter JSON
+          except Exception as e:
+              print(f'Etsy API Fehler: {e}')
+              data = '{"results":[]}'
+          with open('index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          html = html.replace('"ETSY_LISTINGS_PLACEHOLDER"', data)
+          with open('index.html', 'w', encoding='utf-8') as f:
+              f.write(html)
+          PYEOF
+
       - name: GitHub Pages konfigurieren
         uses: actions/configure-pages@v5
 
