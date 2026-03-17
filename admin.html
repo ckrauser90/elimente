@@ -724,10 +724,9 @@ async function loescheTermin(id) {
     ? `Dieser Termin hat ${termin.buchungen_count} Buchung(en).\nAlle Buchungen werden ebenfalls gelöscht.\n\nWirklich löschen?`
     : 'Termin wirklich löschen?';
   if (!confirm(warnMsg)) return;
-  if (termin.buchungen_count > 0) {
-    const { error: bErr } = await sb.from('buchungen').delete().eq('termin_id', id);
-    if (bErr) { alert('Fehler beim Löschen der Buchungen: ' + bErr.message); return; }
-  }
+  // Buchungen immer zuerst löschen (FK-Constraint), auch wenn Zähler 0 zeigt
+  const { error: bErr } = await sb.from('buchungen').delete().eq('termin_id', id);
+  if (bErr) { alert('Fehler beim Löschen der Buchungen: ' + bErr.message); return; }
   const { error } = await sb.from('kurs_termine').delete().eq('id', id);
   if (error) { alert('Fehler beim Löschen des Termins: ' + error.message); return; }
   await ladeTermine();
