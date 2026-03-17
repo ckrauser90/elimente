@@ -1141,23 +1141,38 @@ footer a:hover { color: var(--moss); }
 @media (max-width: 960px) {
   .hero {
     grid-template-columns: 1fr;
-    min-height: auto;
+    min-height: 85vh;
     padding-top: 5rem;
     padding-bottom: 3rem;
   }
+  /* Bild als transparenter Hintergrund hinter dem Text */
   .hero-visual {
+    position: absolute;
+    inset: 0;
     display: flex;
-    padding-top: 0;
-    order: -1; /* Bild über dem Text anzeigen */
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    opacity: 0.22;
+    z-index: 0;
   }
   .hero-organic {
-    width: 240px;
-    height: 290px;
+    width: 100%;
+    height: 100%;
   }
-  .organic-shape-1 { width: 200px; height: 240px; }
-  .organic-shape-2 { width: 100px; height: 115px; }
-  .organic-shape-3 { width: 60px; height: 60px; }
-  .hero-foto { width: 200px; height: 240px; }
+  .hero-foto {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border-radius: 0;
+    object-fit: cover;
+  }
+  .organic-shape-1 { width: 100%; height: 100%; top: 0; left: 0; border-radius: 0; }
+  .organic-shape-2, .organic-shape-3 { display: none; }
+  .hero-text {
+    position: relative;
+    z-index: 1;
+  }
   .offer-cards { grid-template-columns: 1fr; }
   .about-grid { grid-template-columns: 1fr; gap: 2rem; }
   .about-visual { height: 260px; }
@@ -2230,7 +2245,7 @@ async function kalBuchungSenden(e) {
       </div>`;
 
     _selTermin = null;
-    await ladeUndRenderKalender(); // Termine neu laden (aktualisierter Zähler)
+    ladeKursTermine(); // Daten still aktualisieren – Panel bleibt sichtbar bis Nutzer klickt
   }
 }
 
