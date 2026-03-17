@@ -725,9 +725,11 @@ async function loescheTermin(id) {
     : 'Termin wirklich löschen?';
   if (!confirm(warnMsg)) return;
   if (termin.buchungen_count > 0) {
-    await sb.from('buchungen').delete().eq('termin_id', id);
+    const { error: bErr } = await sb.from('buchungen').delete().eq('termin_id', id);
+    if (bErr) { alert('Fehler beim Löschen der Buchungen: ' + bErr.message); return; }
   }
-  await sb.from('kurs_termine').delete().eq('id', id);
+  const { error } = await sb.from('kurs_termine').delete().eq('id', id);
+  if (error) { alert('Fehler beim Löschen des Termins: ' + error.message); return; }
   await ladeTermine();
 }
 
@@ -1220,7 +1222,8 @@ async function buchungStatus(id, status) {
 
 async function loescheBuchung(id, terminId) {
   if (!confirm('Buchung wirklich löschen?')) return;
-  await sb.from('buchungen').delete().eq('id', id);
+  const { error } = await sb.from('buchungen').delete().eq('id', id);
+  if (error) { alert('Fehler beim Löschen: ' + error.message); return; }
   // Buchungszähler am Termin dekrementieren und Status ggf. zurücksetzen
   if (terminId) {
     const { data: t } = await sb.from('kurs_termine')
