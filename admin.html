@@ -580,21 +580,58 @@ async function adminLogin(e) {
 }
 
 async function adminLogout() {
+  _stopInaktivitaetsTimer();
   await sb.auth.signOut();
+  zeigeLogin();
+}
+
+function zeigeLogin() {
+  _stopInaktivitaetsTimer();
   document.getElementById('admin-view').classList.remove('aktiv');
   document.getElementById('login-view').style.display = 'flex';
 }
 
-// Beim Laden prüfen ob schon eingeloggt
-sb.auth.getSession().then(({ data }) => {
-  if (data.session) zeigeAdmin();
-});
-
 function zeigeAdmin() {
   document.getElementById('login-view').style.display = 'none';
   document.getElementById('admin-view').classList.add('aktiv');
+  _starteInaktivitaetsTimer();
   ladeAlles();
 }
+
+// ── SESSION & INAKTIVITÄTS-TIMER ─────────────────────────
+
+const INAKTIV_MS = 30 * 60 * 1000; // 30 Minuten
+let _inaktivTimer = null;
+
+function _starteInaktivitaetsTimer() {
+  _stopInaktivitaetsTimer();
+  _inaktivTimer = setTimeout(() => {
+    alert('Du wurdest nach 30 Minuten Inaktivität automatisch abgemeldet.');
+    adminLogout();
+  }, INAKTIV_MS);
+}
+
+function _stopInaktivitaetsTimer() {
+  if (_inaktivTimer) { clearTimeout(_inaktivTimer); _inaktivTimer = null; }
+}
+
+function _resetInaktivitaetsTimer() {
+  if (_inaktivTimer) _starteInaktivitaetsTimer();
+}
+
+// Maus/Tastatur-Aktivität setzt den Timer zurück
+['click', 'keydown', 'mousemove', 'touchstart'].forEach(ev =>
+  document.addEventListener(ev, _resetInaktivitaetsTimer, { passive: true })
+);
+
+// Auth-State-Änderungen überwachen (Token-Ablauf, Logout aus anderem Tab)
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
+    zeigeLogin();
+  } else if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && session)) {
+    zeigeAdmin();
+  }
+});
 
 // ── DATEN LADEN ──────────────────────────────────────────
 
