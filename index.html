@@ -156,7 +156,7 @@ nav.scrolled {
 }
 
 .hero-text {
-  padding-top: 5rem;
+  padding-top: 2rem;
   max-width: 560px;
   animation: slideUp 0.9s ease-out;
 }
@@ -235,7 +235,7 @@ nav.scrolled {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: 5rem;
+  padding-top: 2rem;
   animation: fadeIn 1.2s ease-out 0.3s both;
 }
 
@@ -490,6 +490,7 @@ section {
 }
 .tag-level { background: rgba(122,142,110,0.14); color: var(--sage); }
 .tag-advanced { background: rgba(184,122,90,0.12); color: var(--terracotta); }
+.tag-kinder { background: rgba(100,160,200,0.13); color: #4a90b8; }
 .tag-date { background: rgba(62,56,50,0.06); color: var(--bark-muted); }
 
 .kurs-item h3 {
@@ -521,6 +522,15 @@ section {
 .kurs-item-klickbar:hover {
   border-color: var(--sage) !important;
   transform: translateY(-2px);
+}
+.kurs-item-voll {
+  opacity: 0.55;
+  cursor: default;
+  filter: grayscale(0.3);
+}
+.kurs-item-voll:hover {
+  transform: none !important;
+  border-color: var(--cream-dark) !important;
 }
 .kurs-footer {
   margin-top: 1rem;
@@ -1132,10 +1142,22 @@ footer a:hover { color: var(--moss); }
   .hero {
     grid-template-columns: 1fr;
     min-height: auto;
-    padding-top: 7rem;
+    padding-top: 5rem;
     padding-bottom: 3rem;
   }
-  .hero-visual { display: none; }
+  .hero-visual {
+    display: flex;
+    padding-top: 0;
+    order: -1; /* Bild über dem Text anzeigen */
+  }
+  .hero-organic {
+    width: 240px;
+    height: 290px;
+  }
+  .organic-shape-1 { width: 200px; height: 240px; }
+  .organic-shape-2 { width: 100px; height: 115px; }
+  .organic-shape-3 { width: 60px; height: 60px; }
+  .hero-foto { width: 200px; height: 240px; }
   .offer-cards { grid-template-columns: 1fr; }
   .about-grid { grid-template-columns: 1fr; gap: 2rem; }
   .about-visual { height: 260px; }
@@ -1457,7 +1479,6 @@ function renderSite(data) {
       <li><a href="#kurse">Kurse</a></li>
       <li><a href="#galerie">Galerie</a></li>
       <li><a href="#verleih">Verleih</a></li>
-      <li><a href="#kontakt">Kontakt</a></li>
     </ul>
     <button class="hamburger" aria-label="Menü" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">
       <span></span><span></span><span></span>
@@ -1551,21 +1572,23 @@ function renderSite(data) {
             const verfuegbar = freiTermine > 0
               ? `<span class="kurs-verfuegbar kurs-verfuegbar-frei">● ${freiTermine} Termin${freiTermine > 1 ? 'e' : ''} verfügbar</span>`
               : `<span class="kurs-verfuegbar kurs-verfuegbar-voll">● Keine freien Termine</span>`;
+            const hatFreieTermine = freiTermine > 0;
             return `
-          <div class="kurs-item kurs-item-klickbar reveal" onclick="zeigeKursImKalender('${k.id}')">
+          <div class="kurs-item ${hatFreieTermine ? 'kurs-item-klickbar' : 'kurs-item-voll'} reveal"
+               ${hatFreieTermine ? `onclick="zeigeKursImKalender('${k.id}')"` : ''}>
             <div class="kurs-tags">
-              <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : 'tag-level'}">${k.level}</span>
+              <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : k.level === 'Kinder' ? 'tag-kinder' : 'tag-level'}">${k.level}</span>
             </div>
             <h3>${k.name}</h3>
             ${k.description ? `<p>${k.description}</p>` : ''}
             <div class="kurs-price">${k.price}${k.duration ? ` <small>/ ${k.duration}</small>` : ''}</div>
-            <div class="kurs-footer">${verfuegbar}<span class="kurs-cta-link">Termin buchen →</span></div>
+            <div class="kurs-footer">${verfuegbar}${hatFreieTermine ? '<span class="kurs-cta-link">Termin buchen →</span>' : ''}</div>
           </div>`;
           }).join('')
         : d.kurse.map(k => `
           <div class="kurs-item reveal">
             <div class="kurs-tags">
-              <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : 'tag-level'}">${k.level}</span>
+              <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : k.level === 'Kinder' ? 'tag-kinder' : 'tag-level'}">${k.level}</span>
               <span class="tag tag-date">📅 ${k.schedule}</span>
             </div>
             <h3>${k.name}</h3>
@@ -1638,50 +1661,8 @@ function renderSite(data) {
         <div class="rental-perks">
           ${d.verleih.perks.map(p => `<span class="perk">${p}</span>`).join('')}
         </div>
-        <a href="#kontakt" class="btn btn-primary">Jetzt anfragen →</a>
+        <button class="btn btn-primary" onclick="setModus('verleih');document.querySelector('.kal-wrapper').scrollIntoView({behavior:'smooth'})">Jetzt anfragen →</button>
       </div>
-    </div>
-  </section>
-
-  <!-- KONTAKT -->
-  <section id="kontakt">
-    <div class="section-intro centered reveal">
-      <div class="section-label">Kontakt</div>
-      <h2>Schreib mir</h2>
-      <p>Ich freue mich auf deine Nachricht.</p>
-    </div>
-    <div class="contact-layout reveal">
-      <div class="contact-details">
-        <h3>So erreichst du mich</h3>
-        <div class="contact-line">
-          <div class="contact-icon">📍</div>
-          <div><div class="label">Adresse</div><div class="value">${d.kontakt.adresse}</div></div>
-        </div>
-        <div class="contact-line">
-          <div class="contact-icon">📧</div>
-          <div><div class="label">E-Mail</div><div class="value">${d.kontakt.email}</div></div>
-        </div>
-        <div class="contact-line">
-          <div class="contact-icon">📞</div>
-          <div><div class="label">Telefon</div><div class="value">${d.kontakt.telefon}</div></div>
-        </div>
-        <div class="contact-line">
-          <div class="contact-icon">📸</div>
-          <div><div class="label">Instagram</div><div class="value">${d.kontakt.instagram}</div></div>
-        </div>
-      </div>
-      <!-- Kontaktformular via Formcarry (EU-Server, DSGVO-konform)
-           EINRICHTEN: Kostenlosen Account auf formcarry.com erstellen,
-           Formular anlegen, und die ID unten im siteData-Objekt eintragen.
-           Beispiel: formcarryId: "AbCdEfGh" (aus formcarry.com/s/AbCdEfGh) -->
-      <form class="form-stack" id="kontakt-formular" onsubmit="kontaktAbsenden(event)">
-        <input class="form-field" type="text"  name="name"    placeholder="Dein Name"                          required>
-        <input class="form-field" type="email" name="email"   placeholder="Deine E-Mail-Adresse"               required>
-        <input class="form-field" type="text"  name="betreff" placeholder="Betreff (z.B. Kursanfrage, Verleih …)">
-        <textarea class="form-field" name="nachricht" placeholder="Deine Nachricht" rows="5"></textarea>
-        <div id="kontakt-meldung" style="display:none;padding:0.8rem 1rem;border-radius:6px;font-size:0.9rem"></div>
-        <button class="btn btn-primary" type="submit" style="width:fit-content" id="kontakt-btn">Nachricht senden →</button>
-      </form>
     </div>
   </section>
 
@@ -2242,8 +2223,8 @@ async function kalBuchungSenden(e) {
       <div class="kal-erfolg">
         <div class="kal-erfolg-haken">✓</div>
         <h3>Buchung eingegangen!</h3>
-        <p>Danke, <strong>${esc(name)}</strong>! Deine Anfrage für den <strong>${datumStr}</strong> ist eingegangen.</p>
-        <p>Ich melde mich per E-Mail an <strong>${esc(email)}</strong>.</p>
+        <p>Vielen Dank, <strong>${esc(name)}</strong>! Deine Anfrage für den <strong>${datumStr}</strong> ist eingegangen.</p>
+        <p>Ich melde mich per Mail oder Telefon bei dir!</p>
         <button class="btn btn-ghost" onclick="_selDatum=null;_selTermin=null;ladeUndRenderKalender()"
                 style="margin-top:1.2rem">Weiteren Termin buchen</button>
       </div>`;
