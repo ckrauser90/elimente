@@ -1,0 +1,24 @@
+{
+  "name": "elimente",
+  "version": "1.0.0",
+  "description": "Website Elimente.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:39925/git/ckrauser90/elimente"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "1.56",
+    "playwright": "1.49",
+    "serve": "^14.2.6"
+  }
+}
