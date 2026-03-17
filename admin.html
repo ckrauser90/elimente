@@ -259,6 +259,32 @@ tr:hover td { background: var(--cream); }
   color: #fff;
 }
 
+/* ─── TEXTE-TAB ─── */
+.texte-sektion {
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+.texte-sektion-kopf {
+  padding: 1rem 1.5rem;
+  background: var(--cream-warm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--bark);
+  border-bottom: 1px solid var(--cream-dark);
+}
+.texte-felder { padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+.texte-feld { display: flex; flex-direction: column; gap: 0.4rem; }
+.texte-feld-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bark-muted); }
+.texte-feld-beschr { font-size: 0.75rem; color: var(--bark-muted); font-style: italic; margin-top: -0.2rem; }
+.texte-feld-row { display: flex; gap: 0.6rem; align-items: flex-start; }
+.texte-feld-row .form-field { flex: 1; }
+.texte-speichern-btn { white-space: nowrap; }
+.texte-status { font-size: 0.75rem; color: var(--green); min-height: 1.2em; }
+
 /* ─── LADE-SPINNER ─── */
 .laden { text-align: center; padding: 3rem; color: var(--bark-muted); font-style: italic; }
 </style>
@@ -300,6 +326,7 @@ tr:hover td { background: var(--cream); }
   <div class="nav-tabs">
     <button class="tab-btn aktiv" onclick="zeigeTab('termine')">📅 Termine</button>
     <button class="tab-btn"       onclick="zeigeTab('buchungen')">📋 Buchungen</button>
+    <button class="tab-btn"       onclick="zeigeTab('texte')">✏️ Texte</button>
     <button class="tab-btn"       onclick="zeigeTab('verleih')">🔄 Verleih</button>
     <button class="tab-btn"       onclick="zeigeTab('kurstypen')">🎨 Kurstypen</button>
   </div>
@@ -320,6 +347,15 @@ tr:hover td { background: var(--cream); }
     </div>
     <div class="filter-leiste" id="buchungen-filter"></div>
     <div class="tabelle-wrap" id="buchungen-liste"><div class="laden">Wird geladen …</div></div>
+  </div>
+
+  <!-- TAB: TEXTE -->
+  <div class="tab-inhalt" id="tab-texte">
+    <div class="abschnitt-kopf">
+      <h2>Website-Texte</h2>
+      <span style="font-size:0.85rem;color:var(--bark-muted)">Änderungen werden sofort auf der Website sichtbar.</span>
+    </div>
+    <div id="texte-inhalt"><div class="laden">Wird geladen …</div></div>
   </div>
 
   <!-- TAB: VERLEIH -->
@@ -490,7 +526,7 @@ function zeigeAdmin() {
 // ── DATEN LADEN ──────────────────────────────────────────
 
 async function ladeAlles() {
-  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen(), ladeVerleihBuchungen()]);
+  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen(), ladeVerleihBuchungen(), ladeTexte()]);
 }
 
 async function ladeKurstypen() {
@@ -632,6 +668,99 @@ async function speichereTermin() {
   if (error) { errEl.textContent = 'Fehler: ' + error.message; return; }
   schliesseModal('termin-modal');
   await ladeTermine();
+}
+
+// ── TEXTE ────────────────────────────────────────────────
+
+// Alle editierbaren Felder mit Beschriftung und Gruppenname
+const TEXTE_FELDER = [
+  { section: 'Startseite', felder: [
+    { key: 'hero.label',           label: 'Label',            typ: 'input',    beschr: 'Kleiner Text über der Hauptüberschrift' },
+    { key: 'hero.headline',        label: 'Überschrift',      typ: 'textarea', beschr: 'Hauptüberschrift (\\n = neue Zeile)' },
+    { key: 'hero.description',     label: 'Beschreibung',     typ: 'textarea', beschr: 'Text unter der Überschrift' },
+    { key: 'hero.buttonPrimary',   label: 'Button 1',         typ: 'input',    beschr: 'Grüner Button' },
+    { key: 'hero.buttonSecondary', label: 'Button 2',         typ: 'input',    beschr: 'Zweiter Button' },
+  ]},
+  { section: 'Über uns', felder: [
+    { key: 'about.quote', label: 'Zitat',     typ: 'textarea', beschr: 'Kursiv-Zitat' },
+    { key: 'about.text1', label: 'Absatz 1',  typ: 'textarea', beschr: '' },
+    { key: 'about.text2', label: 'Absatz 2',  typ: 'textarea', beschr: '' },
+  ]},
+  { section: 'Verleih', felder: [
+    { key: 'verleih.title',       label: 'Titel',         typ: 'input',    beschr: '' },
+    { key: 'verleih.description', label: 'Beschreibung',  typ: 'textarea', beschr: '' },
+    { key: 'verleih.priceDay',    label: 'Preis pro Tag', typ: 'input',    beschr: 'z.B. 35 €' },
+    { key: 'verleih.priceWeek',   label: 'Preis pro Woche', typ: 'input', beschr: 'z.B. 120 €' },
+  ]},
+  { section: 'Kontakt', felder: [
+    { key: 'kontakt.adresse',   label: 'Adresse',   typ: 'input', beschr: '' },
+    { key: 'kontakt.email',     label: 'E-Mail',    typ: 'input', beschr: '' },
+    { key: 'kontakt.telefon',   label: 'Telefon',   typ: 'input', beschr: '' },
+    { key: 'kontakt.instagram', label: 'Instagram', typ: 'input', beschr: '' },
+  ]},
+  { section: 'Footer', felder: [
+    { key: 'footer.copyright', label: 'Copyright', typ: 'input', beschr: '' },
+  ]},
+];
+
+let _siteTexte = {}; // Key → Wert Cache
+
+async function ladeTexte() {
+  const { data } = await sb.from('site_texte').select('key, wert');
+  if (data) data.forEach(r => { _siteTexte[r.key] = r.wert; });
+  renderTexte();
+}
+
+function renderTexte() {
+  const el = document.getElementById('texte-inhalt');
+  if (!el) return;
+
+  el.innerHTML = TEXTE_FELDER.map(gruppe => `
+    <div class="texte-sektion">
+      <div class="texte-sektion-kopf">${gruppe.section}</div>
+      <div class="texte-felder">
+        ${gruppe.felder.map(f => `
+          <div class="texte-feld" id="feld-${f.key.replace('.', '-')}">
+            <div class="texte-feld-label">${f.label}</div>
+            ${f.beschr ? `<div class="texte-feld-beschr">${f.beschr}</div>` : ''}
+            <div class="texte-feld-row">
+              ${f.typ === 'textarea'
+                ? `<textarea class="form-field" id="txt-${f.key.replace('.', '-')}" rows="3">${_siteTexte[f.key] || ''}</textarea>`
+                : `<input class="form-field" id="txt-${f.key.replace('.', '-')}" type="text" value="${(_siteTexte[f.key] || '').replace(/"/g, '&quot;')}">`
+              }
+              <button class="btn btn-primary btn-sm texte-speichern-btn"
+                      onclick="speichereText('${f.key}')">Speichern</button>
+            </div>
+            <div class="texte-status" id="status-${f.key.replace('.', '-')}"></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function speichereText(key) {
+  const feldId  = key.replace('.', '-');
+  const input   = document.getElementById('txt-' + feldId);
+  const statusEl= document.getElementById('status-' + feldId);
+  if (!input) return;
+
+  const wert = input.value;
+  statusEl.textContent = 'Wird gespeichert …';
+  statusEl.style.color = 'var(--bark-muted)';
+
+  const { error } = await sb.from('site_texte')
+    .upsert({ key, wert, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+
+  if (error) {
+    statusEl.textContent = 'Fehler beim Speichern.';
+    statusEl.style.color = 'var(--red)';
+  } else {
+    _siteTexte[key] = wert;
+    statusEl.textContent = '✓ Gespeichert';
+    statusEl.style.color = 'var(--green)';
+    setTimeout(() => { statusEl.textContent = ''; }, 3000);
+  }
 }
 
 // ── VERLEIH ──────────────────────────────────────────────

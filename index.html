@@ -1462,39 +1462,57 @@ function initScrollEffects() {
   });
 }
 
-// Render!
-renderSite(siteData);
-
 /* ═══════════════════════════════════════════════════════
    KALENDER & BUCHUNGSSYSTEM
-   ─────────────────────────────────────────────────────
-   Dieser Block lädt Termine aus Supabase und zeigt
-   einen buchbaren Kalender im Kurse-Bereich an.
    ═══════════════════════════════════════════════════════ */
 
 // Zustand
-let _sb              = null;   // Supabase-Client
-let _modus           = 'kurse'; // 'kurse' oder 'verleih'
-let _termine         = [];     // Kurstermine
-let _verleihBuchungen= [];     // Verleih-Buchungen (gebuchte Zeiträume)
-let _selDatum        = null;   // Gewählter Tag (Kurse)
-let _selTermin       = null;   // Gewählter Termin (Kurse)
-let _verleihStart    = null;   // Gewählter Starttag Verleih (YYYY-MM-DD)
-let _verleihEnde     = null;   // Gewählter Endtag Verleih (YYYY-MM-DD)
+let _sb              = null;
+let _modus           = 'kurse';
+let _termine         = [];
+let _verleihBuchungen= [];
+let _selDatum        = null;
+let _selTermin       = null;
+let _verleihStart    = null;
+let _verleihEnde     = null;
 let _kalMonat        = new Date(); _kalMonat.setDate(1);
 
-// Supabase initialisieren
-(function initSupabase() {
+// ─── Seite initialisieren ──────────────────────────────────
+// Texte aus Supabase laden → siteData überschreiben → rendern
+(async function init() {
   const cfg = siteData.supabase;
-  if (!cfg || !cfg.url || cfg.url.startsWith('DEINE')) {
-    // Noch nicht konfiguriert → freundliche Meldung
-    const el = document.getElementById('kurs-kalender');
-    if (el) el.innerHTML = '<p class="kal-fehler" style="color:var(--bark-muted);font-style:italic">Kalender wird nach der Supabase-Einrichtung aktiv.</p>';
-    return;
+  if (cfg && cfg.url && !cfg.url.startsWith('DEINE')) {
+    _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+    await ladeSiteTexte(); // Texte zuerst laden, dann rendern
   }
-  _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
-  ladeUndRenderKalender();
+
+  renderSite(siteData); // Mit ggf. aktualisierten Texten rendern
+
+  if (_sb) {
+    ladeUndRenderKalender();
+  } else {
+    const el = document.getElementById('kurs-kalender');
+    if (el) el.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--bark-muted);font-style:italic">Kalender wird nach der Supabase-Einrichtung aktiv.</p>';
+  }
 })();
+
+// Texte aus Supabase laden und in siteData einsetzen
+async function ladeSiteTexte() {
+  const { data, error } = await _sb.from('site_texte').select('key, wert');
+  if (error || !data) return;
+
+  data.forEach(({ key, wert }) => {
+    // 'hero.label' → siteData.hero.label = wert
+    const teile = key.split('.');
+    let obj = siteData;
+    for (let i = 0; i < teile.length - 1; i++) {
+      if (obj[teile[i]] === undefined) return;
+      obj = obj[teile[i]];
+    }
+    const letzterKey = teile[teile.length - 1];
+    if (letzterKey in obj) obj[letzterKey] = wert;
+  });
+}
 
 // Alle Daten laden und Kalender rendern
 async function ladeUndRenderKalender() {
