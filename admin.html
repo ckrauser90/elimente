@@ -259,6 +259,69 @@ tr:hover td { background: var(--cream); }
   color: #fff;
 }
 
+/* ─── FOTOS-TAB ─── */
+.foto-bereiche { display: flex; flex-direction: column; gap: 1.5rem; }
+.foto-bereich {
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.foto-bereich-kopf {
+  padding: 1rem 1.5rem;
+  background: var(--cream-warm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--bark);
+  border-bottom: 1px solid var(--cream-dark);
+}
+.foto-bereich-kopf small { font-weight: 400; color: var(--bark-muted); margin-left: 0.5rem; font-size: 0.78rem; }
+.foto-bereich-inhalt { padding: 1.5rem; }
+.foto-einzel { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+.foto-vorschau {
+  width: 180px; height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--cream-warm);
+  border: 2px dashed var(--cream-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+.foto-vorschau img { width: 100%; height: 100%; object-fit: cover; }
+.foto-aktionen { display: flex; flex-direction: column; gap: 0.6rem; justify-content: center; }
+.foto-upload-input { display: none; }
+.foto-progress { font-size: 0.78rem; color: var(--bark-muted); font-style: italic; min-height: 1.2em; }
+.galerie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.galerie-slot {
+  border-radius: 8px; overflow: hidden;
+  background: var(--cream-warm);
+  border: 2px dashed var(--cream-dark);
+  aspect-ratio: 4/3;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  position: relative; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.galerie-slot:hover { border-color: var(--sage-pale); }
+.galerie-slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.galerie-slot-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  opacity: 0; transition: opacity 0.2s;
+}
+.galerie-slot:hover .galerie-slot-overlay { opacity: 1; }
+.galerie-slot-leer .galerie-slot-overlay { background: none; opacity: 1; }
+.galerie-slot-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.5); color: #fff;
+  font-size: 0.7rem; padding: 0.3rem 0.5rem;
+  display: none;
+}
+.galerie-slot:hover .galerie-slot-label { display: block; }
+.foto-alttext { width: 100%; }
+
 /* ─── TEXTE-TAB ─── */
 .texte-sektion {
   background: var(--cream);
@@ -326,6 +389,7 @@ tr:hover td { background: var(--cream); }
   <div class="nav-tabs">
     <button class="tab-btn aktiv" onclick="zeigeTab('termine')">📅 Termine</button>
     <button class="tab-btn"       onclick="zeigeTab('buchungen')">📋 Buchungen</button>
+    <button class="tab-btn"       onclick="zeigeTab('fotos')">🖼 Fotos</button>
     <button class="tab-btn"       onclick="zeigeTab('texte')">✏️ Texte</button>
     <button class="tab-btn"       onclick="zeigeTab('verleih')">🔄 Verleih</button>
     <button class="tab-btn"       onclick="zeigeTab('kurstypen')">🎨 Kurstypen</button>
@@ -347,6 +411,15 @@ tr:hover td { background: var(--cream); }
     </div>
     <div class="filter-leiste" id="buchungen-filter"></div>
     <div class="tabelle-wrap" id="buchungen-liste"><div class="laden">Wird geladen …</div></div>
+  </div>
+
+  <!-- TAB: FOTOS -->
+  <div class="tab-inhalt" id="tab-fotos">
+    <div class="abschnitt-kopf">
+      <h2>Fotos</h2>
+      <span style="font-size:0.85rem;color:var(--bark-muted)">JPG oder PNG · max. 5 MB pro Bild</span>
+    </div>
+    <div class="foto-bereiche" id="fotos-inhalt"><div class="laden">Wird geladen …</div></div>
   </div>
 
   <!-- TAB: TEXTE -->
@@ -668,6 +741,170 @@ async function speichereTermin() {
   if (error) { errEl.textContent = 'Fehler: ' + error.message; return; }
   schliesseModal('termin-modal');
   await ladeTermine();
+}
+
+// ── FOTOS ────────────────────────────────────────────────
+
+let _adminBilder = { hero: null, about: null, galerie: [] };
+
+async function ladeFotos() {
+  const { data } = await sb.from('galerie_bilder').select('*').order('sort_order');
+  if (data) {
+    _adminBilder.hero    = data.find(b => b.bereich === 'hero')  || null;
+    _adminBilder.about   = data.find(b => b.bereich === 'about') || null;
+    _adminBilder.galerie = data.filter(b => b.bereich === 'galerie');
+  }
+  renderFotos();
+}
+
+function renderFotos() {
+  const el = document.getElementById('fotos-inhalt');
+  if (!el) return;
+
+  el.innerHTML = `
+    <div class="foto-bereiche">
+
+      <!-- Hero -->
+      <div class="foto-bereich">
+        <div class="foto-bereich-kopf">Hauptfoto <small>Erscheint rechts neben dem Titel</small></div>
+        <div class="foto-bereich-inhalt">
+          <div class="foto-einzel">
+            <div class="foto-vorschau" id="vorschau-hero">
+              ${_adminBilder.hero ? `<img src="${_adminBilder.hero.url}" alt="">` : '🏺'}
+            </div>
+            <div class="foto-aktionen">
+              <input type="file" accept="image/*" id="upload-hero" class="foto-upload-input"
+                     onchange="uploadFoto('hero', this)">
+              <label for="upload-hero" class="btn btn-primary btn-sm">📁 Foto hochladen</label>
+              ${_adminBilder.hero ? `<button class="btn btn-danger btn-sm" onclick="loescheFoto('${_adminBilder.hero.id}', '${_adminBilder.hero.storage_path || ''}', 'hero')">🗑 Löschen</button>` : ''}
+              <div class="foto-progress" id="progress-hero"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Über uns -->
+      <div class="foto-bereich">
+        <div class="foto-bereich-kopf">Über-uns-Foto <small>Erscheint im Über-uns-Bereich</small></div>
+        <div class="foto-bereich-inhalt">
+          <div class="foto-einzel">
+            <div class="foto-vorschau" id="vorschau-about">
+              ${_adminBilder.about ? `<img src="${_adminBilder.about.url}" alt="">` : '🤲'}
+            </div>
+            <div class="foto-aktionen">
+              <input type="file" accept="image/*" id="upload-about" class="foto-upload-input"
+                     onchange="uploadFoto('about', this)">
+              <label for="upload-about" class="btn btn-primary btn-sm">📁 Foto hochladen</label>
+              ${_adminBilder.about ? `<button class="btn btn-danger btn-sm" onclick="loescheFoto('${_adminBilder.about.id}', '${_adminBilder.about.storage_path || ''}', 'about')">🗑 Löschen</button>` : ''}
+              <div class="foto-progress" id="progress-about"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Galerie -->
+      <div class="foto-bereich">
+        <div class="foto-bereich-kopf">Galerie-Fotos <small>Bis zu 6 Fotos · Klicke auf einen Slot zum Hochladen</small></div>
+        <div class="foto-bereich-inhalt">
+          <div class="galerie-grid">
+            ${Array.from({ length: 6 }, (_, i) => {
+              const bild = _adminBilder.galerie[i] || null;
+              return bild ? `
+                <div class="galerie-slot">
+                  <img src="${bild.url}" alt="${bild.alt_text || ''}">
+                  <div class="galerie-slot-label">${bild.alt_text || 'Kein Titel'}</div>
+                  <div class="galerie-slot-overlay">
+                    <label for="upload-galerie-${i}" class="btn btn-ghost btn-sm" style="color:#fff;border-color:rgba(255,255,255,0.5)">Ersetzen</label>
+                    <button class="btn btn-danger btn-sm" onclick="loescheFoto('${bild.id}', '${bild.storage_path || ''}', 'galerie')">🗑</button>
+                  </div>
+                  <input type="file" accept="image/*" id="upload-galerie-${i}" class="foto-upload-input"
+                         onchange="uploadGalerieFoto(this, ${bild.sort_order}, '${bild.id}')">
+                </div>
+              ` : `
+                <div class="galerie-slot galerie-slot-leer" onclick="document.getElementById('upload-galerie-neu-${i}').click()">
+                  <span style="color:var(--bark-muted)">＋</span>
+                  <div class="galerie-slot-overlay">
+                    <span style="font-size:0.78rem;color:var(--bark-muted)">Foto hinzufügen</span>
+                  </div>
+                  <input type="file" accept="image/*" id="upload-galerie-neu-${i}" class="foto-upload-input"
+                         onchange="uploadGalerieFoto(this, ${i}, null)">
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <div class="foto-progress" id="progress-galerie" style="margin-top:0.8rem"></div>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+async function uploadFoto(bereich, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Datei zu groß (max. 5 MB).'); return; }
+
+  const progressEl = document.getElementById('progress-' + bereich);
+  progressEl.textContent = 'Wird hochgeladen …';
+
+  const ext      = file.name.split('.').pop();
+  const pfad     = `${bereich}/${Date.now()}.${ext}`;
+
+  const { error: upErr } = await sb.storage.from('bilder').upload(pfad, file);
+  if (upErr) { progressEl.textContent = 'Upload fehlgeschlagen: ' + upErr.message; return; }
+
+  const { data: urlData } = sb.storage.from('bilder').getPublicUrl(pfad);
+
+  // Altes Bild löschen falls vorhanden
+  const altes = bereich === 'hero' ? _adminBilder.hero : _adminBilder.about;
+  if (altes) {
+    if (altes.storage_path) await sb.storage.from('bilder').remove([altes.storage_path]);
+    await sb.from('galerie_bilder').delete().eq('id', altes.id);
+  }
+
+  await sb.from('galerie_bilder').insert({ bereich, url: urlData.publicUrl, storage_path: pfad, sort_order: 0 });
+
+  progressEl.textContent = '✓ Gespeichert';
+  setTimeout(() => { progressEl.textContent = ''; }, 3000);
+  await ladeFotos();
+}
+
+async function uploadGalerieFoto(input, sortOrder, alteBildId) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Datei zu groß (max. 5 MB).'); return; }
+
+  const progressEl = document.getElementById('progress-galerie');
+  progressEl.textContent = 'Wird hochgeladen …';
+
+  const ext  = file.name.split('.').pop();
+  const pfad = `galerie/${Date.now()}.${ext}`;
+
+  const { error: upErr } = await sb.storage.from('bilder').upload(pfad, file);
+  if (upErr) { progressEl.textContent = 'Upload fehlgeschlagen: ' + upErr.message; return; }
+
+  const { data: urlData } = sb.storage.from('bilder').getPublicUrl(pfad);
+
+  // Altes Bild in diesem Slot löschen
+  if (alteBildId) {
+    const altes = _adminBilder.galerie.find(b => b.id === alteBildId);
+    if (altes?.storage_path) await sb.storage.from('bilder').remove([altes.storage_path]);
+    await sb.from('galerie_bilder').delete().eq('id', alteBildId);
+  }
+
+  await sb.from('galerie_bilder').insert({ bereich: 'galerie', url: urlData.publicUrl, storage_path: pfad, sort_order: sortOrder });
+
+  progressEl.textContent = '✓ Gespeichert';
+  setTimeout(() => { progressEl.textContent = ''; }, 3000);
+  await ladeFotos();
+}
+
+async function loescheFoto(id, storagePfad, bereich) {
+  if (!confirm('Foto wirklich löschen?')) return;
+  if (storagePfad) await sb.storage.from('bilder').remove([storagePfad]);
+  await sb.from('galerie_bilder').delete().eq('id', id);
+  await ladeFotos();
 }
 
 // ── TEXTE ────────────────────────────────────────────────
