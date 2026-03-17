@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGB – Elimente Keramik</title>
+<meta name="robots" content="noindex">
+<!-- Google Fonts wird erst nach Cookie-Einwilligung geladen (DSGVO) -->
+<style>
+:root {
+  --sage: #7A8E6E;
+  --cream: #F6F2EC;
+  --bark: #3E3832;
+  --bark-light: #5D554E;
+  --bark-muted: #7A726B;
+  --terracotta: #B87A5A;
+  --moss: #5C6E52;
+  --linen: #FAF8F5;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Karla', system-ui, -apple-system, sans-serif;
+  background: var(--linen);
+  color: var(--bark);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 5vw;
+  background: rgba(246,242,236,0.95);
+  border-bottom: 1px solid rgba(122,142,110,0.15);
+}
+
+.logo {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--bark);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+}
+
+.back-link {
+  font-size: 0.88rem;
+  color: var(--sage);
+  text-decoration: none;
+  font-weight: 500;
+}
+.back-link:hover { color: var(--moss); }
+
+.legal-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 5vw 5rem;
+}
+
+.legal-page h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 500;
+  color: var(--bark);
+  margin-bottom: 0.5rem;
+}
+
+.legal-page .subtitle {
+  color: var(--bark-muted);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(122,142,110,0.2);
+}
+
+.legal-page h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--bark);
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(122,142,110,0.15);
+}
+
+.legal-page h2:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.legal-page h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--bark);
+  margin: 1.5rem 0 0.5rem;
+}
+
+.legal-page p, .legal-page li {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--bark-light);
+  margin-bottom: 0.5rem;
+}
+
+.legal-page ul, .legal-page ol {
+  padding-left: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.legal-page a {
+  color: var(--sage);
+  text-decoration: underline;
+}
+
+.placeholder-hint {
+  background: #fff8e1;
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 4px 4px 0;
+  padding: 0.6rem 1rem;
+  margin: 0.5rem 0 1rem;
+  font-size: 0.82rem;
+  color: #92400e;
+}
+
+.abschnitt-label {
+  display: inline-block;
+  background: var(--sage);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  margin-bottom: 0.5rem;
+}
+
+.page-footer {
+  text-align: center;
+  padding: 2rem 5vw;
+  border-top: 1px solid rgba(122,142,110,0.15);
+  font-size: 0.82rem;
+  color: var(--bark-muted);
+}
+.page-footer a {
+  color: var(--bark-muted);
+  text-decoration: none;
+  margin: 0 0.5rem;
+}
+.page-footer a:hover { color: var(--sage); }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="index.html" class="logo">Elimente</a>
+  <a href="index.html" class="back-link">← Zurück zur Website</a>
+</nav>
+
+<main class="legal-page">
+  <h1>Allgemeine Geschäftsbedingungen</h1>
+  <p class="subtitle">Stand: März 2026</p>
+
+  <div class="placeholder-hint">
+    ⚠️ Diese AGB sind ein Entwurf und sollten vor dem Einsatz von einer Rechtsanwältin/einem
+    Rechtsanwalt geprüft werden. Name und Adresse bitte überall wo markiert ausfüllen.
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TEIL 1: ALLGEMEINES & KERAMIK-KAUF
+       ═══════════════════════════════════════════ -->
+
+  <h2>§ 1 Geltungsbereich und Vertragspartner</h2>
+  <span class="abschnitt-label">Keramik-Verkauf &amp; Kurse</span>
+  <div class="placeholder-hint">⚠️ Bitte Namen und Adresse eintragen</div>
+  <p>
+    Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen<br>
+    <strong>[Vorname Nachname], [Straße], [PLZ Ort]</strong> (nachfolgend „Anbieter")
+    und Kunden bezüglich:
+  </p>
+  <ul>
+    <li>Kauf von Keramik-Produkten</li>
+    <li>Buchung von Töpferkursen</li>
+    <li>Verleih von Töpferscheiben (geregelt in Teil 2)</li>
+  </ul>
+  <p>
+    Abweichende AGB des Kunden werden nicht anerkannt, sofern der Anbieter ihnen nicht
+    ausdrücklich schriftlich zugestimmt hat.
+  </p>
+
+  <h2>§ 2 Vertragsschluss (Keramik-Kauf)</h2>
+  <span class="abschnitt-label">Keramik-Verkauf</span>
+  <p>
+    Die Darstellung von Produkten auf dieser Website stellt kein rechtlich bindendes Angebot dar.
+    Mit einer Bestellung gibt der Kunde ein verbindliches Angebot zum Kauf ab.
+    Der Vertrag kommt zustande, wenn der Anbieter die Bestellung bestätigt oder die Ware versendet.
+  </p>
+
+  <h2>§ 3 Preise und Zahlung</h2>
+  <span class="abschnitt-label">Keramik-Verkauf</span>
+  <p>
+    Alle Preise verstehen sich als Endpreise inklusive der gesetzlichen Umsatzsteuer.
+    Versandkosten werden im Checkout separat ausgewiesen. Die Zahlung erfolgt über die
+    angebotenen Zahlungsmethoden (Überweisung, ggf. Stripe, Etsy-Checkout).
+  </p>
+
+  <h2>§ 4 Lieferung</h2>
+  <span class="abschnitt-label">Keramik-Verkauf</span>
+  <p>
+    Lieferungen erfolgen innerhalb Deutschlands. Der Versand erfolgt nach Zahlungseingang
+    innerhalb von 2–7 Werktagen (Werkstattware) oder nach individueller Absprache
+    (Sonderanfertigungen). Der Anbieter versichert Pakete gegen Transportschäden.
+  </p>
+  <p>
+    Handgemachte Keramik kann leichte Maß- und Farbabweichungen vom Foto aufweisen –
+    das ist ein Merkmal handwerklicher Qualität und kein Mangel.
+  </p>
+
+  <h2>§ 5 Widerrufsrecht (Verbraucher)</h2>
+  <span class="abschnitt-label">Keramik-Verkauf</span>
+  <h3>Widerrufsbelehrung</h3>
+  <p>
+    Du hast das Recht, binnen 14 Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.
+    Die Widerrufsfrist beträgt 14 Tage ab dem Tag, an dem du oder ein von dir benannter
+    Dritter die Ware in Besitz genommen hat.
+  </p>
+  <p>
+    Um dein Widerrufsrecht auszuüben, musst du dem Anbieter mittels einer eindeutigen Erklärung
+    (z.B. per E-Mail) über deinen Entschluss, diesen Vertrag zu widerrufen, informieren.
+  </p>
+  <p>
+    Zur Wahrung der Widerrufsfrist reicht es aus, dass du die Mitteilung über die Ausübung
+    des Widerrufsrechts vor Ablauf der Widerrufsfrist absendest.
+  </p>
+  <h3>Folgen des Widerrufs</h3>
+  <p>
+    Im Falle eines wirksamen Widerrufs sind die beiderseits empfangenen Leistungen
+    zurückzugewähren. Du trägst die unmittelbaren Kosten der Rücksendung der Ware.
+    Die Rückzahlung erfolgt unverzüglich, spätestens binnen 14 Tagen nach Eingang
+    der zurückgesandten Ware.
+  </p>
+  <p>
+    <strong>Ausschluss des Widerrufsrechts:</strong> Das Widerrufsrecht gilt nicht für
+    Sonderanfertigungen, die ausdrücklich auf Kundenwunsch gefertigt wurden
+    (§ 312g Abs. 2 Nr. 1 BGB).
+  </p>
+
+  <h2>§ 6 Haftung für Mängel (Keramik)</h2>
+  <span class="abschnitt-label">Keramik-Verkauf</span>
+  <p>
+    Es gelten die gesetzlichen Gewährleistungsrechte. Handgemachte Keramik kann
+    werkstücktypische Merkmale wie leichte Unregelmäßigkeiten, Glasurvariationen
+    und Maßtoleranzen aufweisen. Diese sind kein Mangel.
+  </p>
+
+  <h2>§ 7 Töpferkurse – Buchung und Stornierung</h2>
+  <span class="abschnitt-label">Kurse</span>
+  <p>
+    Kurs-Buchungen sind verbindlich. Die Rechnung wird nach Buchungsbestätigung gestellt.
+  </p>
+  <h3>Stornierung durch Kunden</h3>
+  <ul>
+    <li>Stornierung mehr als 14 Tage vor Kursbeginn: volle Rückerstattung</li>
+    <li>Stornierung 7–14 Tage vor Kursbeginn: 50 % des Kurspreises werden erstattet</li>
+    <li>Stornierung weniger als 7 Tage vor Kursbeginn: keine Rückerstattung</li>
+    <li>Umbuchung auf einen anderen Termin: einmalig kostenfrei, wenn mehr als 7 Tage vorher</li>
+  </ul>
+  <h3>Stornierung durch den Anbieter</h3>
+  <p>
+    Kann ein Kurs aus wichtigem Grund (z.B. Erkrankung, zu wenig Teilnehmer) nicht
+    stattfinden, wird der vollständige Kurspreis erstattet. Weitergehende Ansprüche
+    (z.B. Reisekosten) bestehen nicht.
+  </p>
+  <h3>Mindestteilnehmerzahl</h3>
+  <p>
+    Kurse finden ab einer Mindestteilnehmerzahl statt. Der Anbieter informiert rechtzeitig,
+    wenn ein Kurs mangels Teilnehmer nicht stattfindet.
+  </p>
+
+  <!-- ═══════════════════════════════════════════
+       TEIL 2: TÖPFERSCHEIBEN-VERLEIH
+       ═══════════════════════════════════════════ -->
+
+  <h2>§ 8 Töpferscheiben-Verleih – Allgemeines</h2>
+  <span class="abschnitt-label">Verleih</span>
+  <p>
+    Der Anbieter verleiht eine Töpferscheibe (nachfolgend „Leihgegenstand") gegen Entgelt.
+    Es steht genau <strong>1 Töpferscheibe</strong> zum Verleih zur Verfügung.
+    Der Verleih erfolgt ausschließlich in der Bundesrepublik Deutschland.
+  </p>
+
+  <h2>§ 9 Mindestmietdauer und Buchung</h2>
+  <span class="abschnitt-label">Verleih</span>
+  <p>
+    Die Mindestmietdauer beträgt <strong>14 Tage (2 Wochen)</strong>. Kürzere Mietzeiten
+    sind nicht möglich. Der Mietpreis wird auf der Website ausgewiesen.
+  </p>
+  <p>
+    Die Buchung erfolgt verbindlich über das Buchungsformular auf dieser Website.
+    Der Mietvertrag kommt mit der Buchungsbestätigung zustande.
+  </p>
+
+  <h2>§ 10 Lieferung, Abholung und Rückgabe</h2>
+  <span class="abschnitt-label">Verleih</span>
+  <p>
+    Die Details zu Lieferung, Abholung und Rückgabe werden individuell vereinbart.
+    Transport und Aufstellung durch den Anbieter sind im Mietpreis enthalten, sofern
+    auf der Website entsprechend ausgewiesen.
+  </p>
+  <p>
+    Die Töpferscheibe ist am vereinbarten Ende der Mietdauer in gereinigtem Zustand
+    zurückzugeben.
+  </p>
+
+  <h2>§ 11 Kaution</h2>
+  <span class="abschnitt-label">Verleih</span>
+  <p>
+    Der Anbieter kann eine Kaution in Höhe von <strong>200 €</strong> erheben.
+    Die Kaution wird nach problemloser Rückgabe vollständig zurückerstattet.
+    Im Schadenfall wird die Kaution ganz oder teilweise zur Deckung des Schadens verwendet.
+  </p>
+
+  <h2>§ 12 Haftung bei Beschädigung</h2>
+  <span class="abschnitt-label">Verleih</span>
+  <p>
+    Der Mieter haftet für alle Schäden am Leihgegenstand, die während der Mietzeit entstehen,
+    es sei denn, er hat die Schäden nicht zu vertreten. Der Mieter ist verpflichtet,
+    Schäden unverzüglich zu melden. Eine Eigenreparatur ist nicht gestattet.
+  </p>
+  <p>
+    Der Leihgegenstand darf nur bestimmungsgemäß (Töpfern) und nur von der mietenden Person
+    genutzt werden. Die Weitervermietung ist untersagt.
+  </p>
+
+  <h2>§ 13 Stornierung Verleih</h2>
+  <span class="abschnitt-label">Verleih</span>
+  <ul>
+    <li>Stornierung mehr als 14 Tage vor Mietbeginn: volle Rückerstattung</li>
+    <li>Stornierung 7–14 Tage vor Mietbeginn: 50 % des Mietpreises werden erstattet</li>
+    <li>Stornierung weniger als 7 Tage vor Mietbeginn: keine Rückerstattung</li>
+  </ul>
+  <p>
+    Stornierungen sind schriftlich per E-Mail zu erklären.
+  </p>
+
+  <!-- ═══════════════════════════════════════════
+       TEIL 3: ALLGEMEINE SCHLUSSBESTIMMUNGEN
+       ═══════════════════════════════════════════ -->
+
+  <h2>§ 14 Schlussbestimmungen</h2>
+  <p>
+    Es gilt das Recht der Bundesrepublik Deutschland. Gerichtsstand für Streitigkeiten
+    mit Kaufleuten oder juristischen Personen des öffentlichen Rechts ist der Sitz des Anbieters.
+  </p>
+  <p>
+    Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt die Wirksamkeit
+    der übrigen Bestimmungen unberührt.
+  </p>
+</main>
+
+<footer class="page-footer">
+  <p>
+    <a href="index.html">Startseite</a>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="agb.html">AGB</a>
+  </p>
+</footer>
+
+<script>
+/* Google Fonts nach gespeicherter Einwilligung laden */
+(function() {
+  if (localStorage.getItem('elimente_cookie_consent') === 'all') {
+    const preconnect = document.createElement('link');
+    preconnect.rel = 'preconnect';
+    preconnect.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(preconnect);
+
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap';
+    document.head.appendChild(link);
+  }
+})();
+</script>
+
+</body>
+</html>

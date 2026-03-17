@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impressum – Elimente Keramik</title>
+<meta name="robots" content="noindex"> <!-- Impressum muss nicht in Suchmaschinen erscheinen -->
+<!-- Google Fonts wird erst nach Cookie-Einwilligung geladen (DSGVO) -->
+<style>
+:root {
+  --sage: #7A8E6E;
+  --cream: #F6F2EC;
+  --bark: #3E3832;
+  --bark-light: #5D554E;
+  --bark-muted: #7A726B;
+  --terracotta: #B87A5A;
+  --moss: #5C6E52;
+  --linen: #FAF8F5;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Karla', system-ui, -apple-system, sans-serif;
+  background: var(--linen);
+  color: var(--bark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NAV ─── */
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 5vw;
+  background: rgba(246,242,236,0.95);
+  border-bottom: 1px solid rgba(122,142,110,0.15);
+}
+
+.logo {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--bark);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+}
+
+.back-link {
+  font-size: 0.88rem;
+  color: var(--sage);
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.back-link:hover { color: var(--moss); }
+
+/* ─── INHALT ─── */
+.legal-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 5vw 5rem;
+}
+
+.legal-page h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 500;
+  color: var(--bark);
+  margin-bottom: 0.5rem;
+}
+
+.legal-page .subtitle {
+  color: var(--bark-muted);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(122,142,110,0.2);
+}
+
+.legal-page h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--bark);
+  margin: 2rem 0 0.75rem;
+}
+
+.legal-page p, .legal-page li {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--bark-light);
+  margin-bottom: 0.5rem;
+}
+
+.legal-page ul {
+  padding-left: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.legal-page a {
+  color: var(--sage);
+  text-decoration: underline;
+}
+
+/* Platzhalter-Hinweis – muss vor Go-Live entfernt werden */
+.placeholder-hint {
+  background: #fff8e1;
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 4px 4px 0;
+  padding: 0.6rem 1rem;
+  margin: 0.5rem 0 1rem;
+  font-size: 0.82rem;
+  color: #92400e;
+}
+
+/* ─── FOOTER ─── */
+.page-footer {
+  text-align: center;
+  padding: 2rem 5vw;
+  border-top: 1px solid rgba(122,142,110,0.15);
+  font-size: 0.82rem;
+  color: var(--bark-muted);
+}
+.page-footer a {
+  color: var(--bark-muted);
+  text-decoration: none;
+  margin: 0 0.5rem;
+}
+.page-footer a:hover { color: var(--sage); }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="index.html" class="logo">Elimente</a>
+  <a href="index.html" class="back-link">← Zurück zur Website</a>
+</nav>
+
+<main class="legal-page">
+  <h1>Impressum</h1>
+  <p class="subtitle">Angaben gemäß § 5 TMG</p>
+
+  <h2>Angaben zur Person</h2>
+  <!-- ⚠️ BITTE AUSFÜLLEN: Vollständiger Name der Betreiberin -->
+  <div class="placeholder-hint">⚠️ Bitte ausfüllen: Vollständiger Vorname und Nachname</div>
+  <p>
+    [Vorname Nachname]<br>
+    <!-- ⚠️ BITTE AUSFÜLLEN: Vollständige Adresse -->
+    [Straße und Hausnummer]<br>
+    [PLZ Ort]<br>
+    Deutschland
+  </p>
+
+  <h2>Kontakt</h2>
+  <!-- ⚠️ BITTE AUSFÜLLEN: Echte Kontaktdaten einsetzen -->
+  <div class="placeholder-hint">⚠️ Bitte echte E-Mail-Adresse und Telefonnummer eintragen</div>
+  <p>
+    E-Mail: <a href="mailto:hallo@elimente-keramik.de">hallo@elimente-keramik.de</a><br>
+    Telefon: 0123 – 456 789 0
+  </p>
+
+  <h2>Umsatzsteuer-Identifikationsnummer</h2>
+  <p>
+    Sofern eine Umsatzsteuer-ID vorhanden ist, wird diese hier angegeben.<br>
+    <!-- ⚠️ BITTE AUSFÜLLEN oder Absatz entfernen, falls keine USt-ID -->
+    <span style="color:var(--bark-muted);font-style:italic">(Umsatzsteuer-ID ggf. hier ergänzen oder diesen Absatz entfernen)</span>
+  </p>
+
+  <h2>Verantwortlich für den Inhalt (§ 55 Abs. 2 RStV)</h2>
+  <!-- ⚠️ BITTE AUSFÜLLEN: Gleiche Person wie oben -->
+  <div class="placeholder-hint">⚠️ Bitte Namen und Adresse wiederholen</div>
+  <p>
+    [Vorname Nachname]<br>
+    [Straße und Hausnummer]<br>
+    [PLZ Ort]
+  </p>
+
+  <h2>Streitschlichtung</h2>
+  <p>
+    Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
+    <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>
+  </p>
+  <p>
+    Zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle
+    sind wir nicht verpflichtet und nicht bereit.
+  </p>
+
+  <h2>Haftung für Inhalte</h2>
+  <p>
+    Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten
+    nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als
+    Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde
+    Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige
+    Tätigkeit hinweisen.
+  </p>
+
+  <h2>Haftung für Links</h2>
+  <p>
+    Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen
+    Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen.
+    Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der
+    Seiten verantwortlich.
+  </p>
+
+  <h2>Urheberrecht</h2>
+  <p>
+    Die durch die Seitenbetreiberin erstellten Inhalte und Werke auf diesen Seiten unterliegen
+    dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art
+    der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen
+    Zustimmung der Autorin bzw. Erstellerin.
+  </p>
+</main>
+
+<footer class="page-footer">
+  <p>
+    <a href="index.html">Startseite</a>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="agb.html">AGB</a>
+  </p>
+</footer>
+
+<script>
+/* Google Fonts nach gespeicherter Cookie-Einwilligung laden */
+(function() {
+  if (localStorage.getItem('elimente_cookie_consent') === 'all') {
+    const preconnect = document.createElement('link');
+    preconnect.rel = 'preconnect';
+    preconnect.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(preconnect);
+
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap';
+    document.head.appendChild(link);
+  }
+})();
+</script>
+
+</body>
+</html>

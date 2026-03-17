@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Elimente – Keramik · Kurse · Verleih</title>
 <meta name="description" content="Elimente – Handgemachte Keramik, Töpferkurse und Töpferscheiben-Verleih">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Google Fonts wird erst nach Cookie-Einwilligung per JavaScript geladen (DSGVO) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Lokale Keys für Tests (wird nicht ins Repo committed, siehe .gitignore) -->
 <script src="config.local.js" onerror="/* kein config.local.js vorhanden – ok auf dem Server */"></script>
@@ -41,7 +40,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Karla', sans-serif;
+  font-family: 'Karla', system-ui, -apple-system, sans-serif;
   background: var(--linen);
   color: var(--bark);
   overflow-x: hidden;
@@ -64,7 +63,7 @@ body::before {
 
 /* ─── TYPOGRAPHY ─── */
 h1, h2, h3, h4 {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -1167,13 +1166,156 @@ footer a:hover { color: var(--moss); }
   footer { flex-direction: column; text-align: center; }
   footer a { margin: 0 0.5rem; }
 }
+
+/* ─── COOKIE BANNER ─── */
+#cookie-banner {
+  display: none; /* wird per JS eingeblendet */
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 10000;
+  background: var(--bark);
+  color: var(--cream);
+  padding: 1.2rem 5vw;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+}
+#cookie-banner p {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  flex: 1 1 300px;
+  color: var(--cream);
+  margin: 0;
+}
+#cookie-banner p a {
+  color: var(--terracotta-light);
+  text-decoration: underline;
+}
+#cookie-banner .cookie-btns {
+  display: flex; gap: 0.6rem; flex-wrap: wrap;
+}
+#cookie-banner .cookie-btn {
+  padding: 0.55rem 1.2rem;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--cream);
+  transition: background 0.2s, color 0.2s;
+}
+#cookie-banner .cookie-btn-all {
+  background: var(--sage);
+  color: #fff;
+  border-color: var(--sage);
+}
+#cookie-banner .cookie-btn-all:hover { background: var(--moss); }
+#cookie-banner .cookie-btn-min {
+  background: transparent;
+  color: var(--cream);
+}
+#cookie-banner .cookie-btn-min:hover { background: rgba(255,255,255,0.1); }
 </style>
 </head>
 <body>
 
+<!-- COOKIE BANNER (erscheint beim ersten Besuch) -->
+<div id="cookie-banner" role="dialog" aria-label="Cookie-Einstellungen">
+  <p>
+    Diese Website verwendet Cookies und externe Dienste (Google Fonts, Google Analytics).
+    Mit „Alle akzeptieren" stimmst du der Nutzung aller Dienste zu.
+    Mit „Nur notwendige" werden keine externen Dienste geladen.
+    Weitere Infos in der <a href="datenschutz.html">Datenschutzerklärung</a>.
+  </p>
+  <div class="cookie-btns">
+    <button class="cookie-btn cookie-btn-min" onclick="cookieNurNotwendige()">Nur notwendige</button>
+    <button class="cookie-btn cookie-btn-all" onclick="cookieAlleAkzeptieren()">Alle akzeptieren</button>
+  </div>
+</div>
+
 <div id="app"></div>
 
 <script>
+/* ═══════════════════════════════════════════════════════
+   COOKIE & DATENSCHUTZ-VERWALTUNG
+   Google Fonts und Analytics werden erst nach Zustimmung geladen.
+   ═══════════════════════════════════════════════════════ */
+
+const COOKIE_KEY = 'elimente_cookie_consent';
+// Google Analytics Mess-ID – hier eintragen, sobald Analytics eingerichtet ist:
+const GA_ID = ''; // z.B. 'G-XXXXXXXXXX'
+
+function cookieGetConsent() {
+  return localStorage.getItem(COOKIE_KEY);
+}
+
+function cookieSetConsent(wert) {
+  localStorage.setItem(COOKIE_KEY, wert);
+}
+
+function cookieBannerZeigen() {
+  document.getElementById('cookie-banner').style.display = 'flex';
+}
+
+function cookieBannerVerstecken() {
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+
+function googleFontsLaden() {
+  // Google Fonts: IP-Adresse wird an Google (USA) übertragen → erst nach Einwilligung
+  const preconnect = document.createElement('link');
+  preconnect.rel = 'preconnect';
+  preconnect.href = 'https://fonts.googleapis.com';
+  document.head.appendChild(preconnect);
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap';
+  document.head.appendChild(link);
+}
+
+function googleAnalyticsLaden() {
+  if (!GA_ID) return; // Nur laden, wenn eine ID eingetragen ist
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+  document.head.appendChild(script);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', GA_ID);
+}
+
+function cookieAlleAkzeptieren() {
+  cookieSetConsent('all');
+  cookieBannerVerstecken();
+  googleFontsLaden();
+  googleAnalyticsLaden();
+}
+
+function cookieNurNotwendige() {
+  cookieSetConsent('necessary');
+  cookieBannerVerstecken();
+  // Keine externen Dienste – System-Schriften bleiben aktiv
+}
+
+// Beim Seitenaufruf: gespeicherte Einwilligung prüfen
+(function() {
+  const einwilligung = cookieGetConsent();
+  if (einwilligung === 'all') {
+    googleFontsLaden();
+    googleAnalyticsLaden();
+  } else if (einwilligung === 'necessary') {
+    // Keine externen Dienste laden
+  } else {
+    // Noch keine Entscheidung → Banner anzeigen
+    document.addEventListener('DOMContentLoaded', cookieBannerZeigen);
+  }
+})();
+
 /* ═══════════════════════════════════════════════════════
    ✏️  HIER INHALTE ÄNDERN!
    
@@ -1275,7 +1417,10 @@ const siteData = {
     adresse: "Musterstraße 12, 12345 Musterstadt",
     email: "hallo@elemente-keramik.de",
     telefon: "0123 – 456 789 0",
-    instagram: "@elemente.keramik"
+    instagram: "@elemente.keramik",
+    // Formspree-ID: Account auf formspree.io anlegen, Formular-ID hier eintragen
+    // Beispiel: "xpwzabcd" (aus formspree.io/f/xpwzabcd)
+    formspreeId: "" // ← HIER DIE FORMSPREE-ID EINTRAGEN
   },
 
   // ── Footer ──
@@ -1517,13 +1662,18 @@ function renderSite(data) {
           <div><div class="label">Instagram</div><div class="value">${d.kontakt.instagram}</div></div>
         </div>
       </div>
-      <div class="form-stack">
-        <input class="form-field" type="text" placeholder="Dein Name">
-        <input class="form-field" type="email" placeholder="Deine E-Mail-Adresse">
-        <input class="form-field" type="text" placeholder="Betreff (z.B. Kursanfrage, Verleih …)">
-        <textarea class="form-field" placeholder="Deine Nachricht"></textarea>
-        <button class="btn btn-primary" style="width:fit-content" onclick="alert('Danke für deine Nachricht! (In der fertigen Seite wird das Formular per Formspree o.ä. versendet.)')">Nachricht senden →</button>
-      </div>
+      <!-- Kontaktformular via Formspree
+           EINRICHTEN: Kostenloser Account auf formspree.io erstellen,
+           Formular anlegen, und die Formular-ID unten im siteData-Objekt eintragen.
+           Beispiel: formspreeId: "xpwzabcd" (aus der URL formspree.io/f/xpwzabcd) -->
+      <form class="form-stack" id="kontakt-formular" onsubmit="kontaktAbsenden(event)">
+        <input class="form-field" type="text"  name="name"    placeholder="Dein Name"                          required>
+        <input class="form-field" type="email" name="email"   placeholder="Deine E-Mail-Adresse"               required>
+        <input class="form-field" type="text"  name="betreff" placeholder="Betreff (z.B. Kursanfrage, Verleih …)">
+        <textarea class="form-field" name="nachricht" placeholder="Deine Nachricht" rows="5"></textarea>
+        <div id="kontakt-meldung" style="display:none;padding:0.8rem 1rem;border-radius:6px;font-size:0.9rem"></div>
+        <button class="btn btn-primary" type="submit" style="width:fit-content" id="kontakt-btn">Nachricht senden →</button>
+      </form>
     </div>
   </section>
 
@@ -1533,7 +1683,11 @@ function renderSite(data) {
       <span class="logo" style="font-size:1.2rem">${d.name}<span class="logo-dot"></span></span>
       &nbsp;&nbsp;${d.footer.copyright}
     </div>
-    <div>${d.footer.links.map(l => `<a href="#">${l}</a>`).join('')}</div>
+    <div>
+      <a href="impressum.html">Impressum</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="agb.html">AGB</a>
+    </div>
   </footer>
   `;
 
@@ -2083,6 +2237,62 @@ async function kalBuchungSenden(e) {
     _selTermin = null;
     await ladeUndRenderKalender(); // Termine neu laden (aktualisierter Zähler)
   }
+}
+
+/* ═══════════════════════════════════════════════════════
+   KONTAKTFORMULAR (Formspree)
+   ═══════════════════════════════════════════════════════ */
+
+async function kontaktAbsenden(event) {
+  event.preventDefault();
+
+  const formspreeId = siteData.kontakt.formspreeId;
+  const meldung = document.getElementById('kontakt-meldung');
+  const btn = document.getElementById('kontakt-btn');
+  const form = document.getElementById('kontakt-formular');
+
+  // Noch keine Formspree-ID? Hinweis anzeigen.
+  if (!formspreeId) {
+    meldung.style.display = 'block';
+    meldung.style.background = '#fff8e1';
+    meldung.style.color = '#92400e';
+    meldung.style.border = '1px solid #f59e0b';
+    meldung.innerHTML = '⚠️ Das Kontaktformular ist noch nicht eingerichtet. Bitte eine Formspree-ID in <code>siteData.kontakt.formspreeId</code> eintragen.';
+    return;
+  }
+
+  // Absenden
+  btn.disabled = true;
+  btn.textContent = 'Wird gesendet …';
+
+  const daten = new FormData(form);
+  try {
+    const antwort = await fetch('https://formspree.io/f/' + formspreeId, {
+      method: 'POST',
+      body: daten,
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (antwort.ok) {
+      meldung.style.display = 'block';
+      meldung.style.background = '#f0fdf4';
+      meldung.style.color = '#166534';
+      meldung.style.border = '1px solid #86efac';
+      meldung.textContent = '✓ Danke für deine Nachricht! Ich melde mich so schnell wie möglich.';
+      form.reset();
+    } else {
+      throw new Error('Serverfehler');
+    }
+  } catch (e) {
+    meldung.style.display = 'block';
+    meldung.style.background = '#fef2f2';
+    meldung.style.color = '#991b1b';
+    meldung.style.border = '1px solid #fca5a5';
+    meldung.textContent = '✗ Es ist ein Fehler aufgetreten. Bitte sende deine Nachricht direkt per E-Mail.';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Nachricht senden →';
 }
 </script>
 
