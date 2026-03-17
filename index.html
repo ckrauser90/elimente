@@ -639,7 +639,7 @@ section {
 }
 
 /* ─── VERLEIH ─── */
-#verleih { background: var(--cream); }
+#verleih { background: var(--linen); }
 
 .rental-card {
   max-width: 860px;
@@ -648,7 +648,7 @@ section {
   grid-template-columns: auto 1fr;
   gap: 3rem;
   align-items: center;
-  background: var(--linen);
+  background: var(--cream);
   border-radius: 14px;
   padding: 3rem;
   border: 1px solid rgba(122,142,110,0.1);
@@ -774,7 +774,7 @@ section {
 }
 
 /* ─── STANDORT ─── */
-#standort { background: var(--linen); }
+#standort { background: var(--cream); }
 .standort-grid {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
@@ -1235,6 +1235,20 @@ footer a:hover { color: var(--moss); }
   transform: translateY(0);
 }
 
+/* ─── HERO BUTTONS: alle drei auf einer Linie bei iPad Landscape (961–1200px) ─── */
+@media (max-width: 1200px) and (min-width: 961px) {
+  .hero-actions {
+    gap: 0.6rem;
+  }
+  .hero-actions .btn {
+    font-size: 0.78rem;
+    padding: 0.72rem 1.1rem;
+  }
+  .hero-actions .btn-ghost {
+    padding: 0.72rem 0.3rem;
+  }
+}
+
 /* ─── RESPONSIVE ─── */
 @media (max-width: 960px) {
   .hero {
@@ -1286,7 +1300,8 @@ footer a:hover { color: var(--moss); }
   .contact-layout { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 640px) {
+/* ─── NAV: Burger-Menü ab 900px (iPad Portrait hat zu viele Punkte) ─── */
+@media (max-width: 900px) {
   .nav-links { display: none; }
   .hamburger { display: block; }
   nav.mobile-open .nav-links {
@@ -1299,6 +1314,9 @@ footer a:hover { color: var(--moss); }
     gap: 1.2rem;
     box-shadow: 0 12px 24px rgba(0,0,0,0.05);
   }
+}
+
+@media (max-width: 640px) {
   section { padding: 4.5rem 5vw; }
   .gallery-masonry {
     grid-template-columns: 1fr 1fr;
