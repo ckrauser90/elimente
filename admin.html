@@ -153,6 +153,40 @@ header {
 .btn-logout { background: none; color: var(--bark-muted); border: 1px solid var(--cream-dark); font-size: 0.78rem; }
 .btn-logout:hover { color: var(--red); border-color: var(--red); }
 
+/* ─── TOGGLE SWITCH ─── */
+.toggle-zeile {
+  display: flex; align-items: center; gap: 1.2rem;
+  padding: 1.2rem 1.5rem;
+  background: var(--cream);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--cream-dark);
+}
+.toggle-label { display: flex; align-items: center; gap: 0.9rem; cursor: pointer; user-select: none; }
+.toggle-label input { display: none; }
+.toggle-slider {
+  width: 50px; height: 28px;
+  background: #d1d5db;
+  border-radius: 14px;
+  position: relative;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 22px; height: 22px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.toggle-label input:checked + .toggle-slider { background: var(--sage); }
+.toggle-label input:checked + .toggle-slider::before { transform: translateX(22px); }
+.toggle-text { font-size: 0.95rem; color: var(--bark); font-weight: 500; }
+.toggle-status { font-size: 0.82rem; color: var(--bark-muted); }
+
 /* ─── TABELLEN ─── */
 .tabelle-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
@@ -434,7 +468,21 @@ tr:hover td { background: var(--cream); }
   <!-- TAB: VERLEIH -->
   <div class="tab-inhalt" id="tab-verleih">
     <div class="abschnitt-kopf">
-      <h2>Verleih-Buchungen</h2>
+      <h2>Verleih</h2>
+    </div>
+
+    <!-- Verfügbarkeits-Toggle -->
+    <div class="toggle-zeile">
+      <label class="toggle-label">
+        <input type="checkbox" id="verleih-aktiv-toggle" onchange="verleihAktivSpeichern(this)">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Scheibe verfügbar</span>
+      </label>
+      <span class="toggle-status" id="verleih-aktiv-status">Wird geladen …</span>
+    </div>
+
+    <div class="abschnitt-kopf" style="margin-top:0.5rem">
+      <h3 style="font-size:1rem;color:var(--bark-muted);font-weight:500">Buchungsanfragen</h3>
     </div>
     <div class="tabelle-wrap" id="verleih-liste"><div class="laden">Wird geladen …</div></div>
   </div>
@@ -640,7 +688,7 @@ sb.auth.onAuthStateChange((event, session) => {
 // ── DATEN LADEN ──────────────────────────────────────────
 
 async function ladeAlles() {
-  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen(), ladeVerleihBuchungen(), ladeTexte(), ladeFotos()]);
+  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen(), ladeVerleihBuchungen(), ladeTexte(), ladeFotos(), ladeVerleihAktiv()]);
 }
 
 async function ladeKurstypen() {
@@ -1146,6 +1194,27 @@ function renderVerleihBuchungen() {
         }).join('')}
       </tbody>
     </table>`;
+}
+
+async function ladeVerleihAktiv() {
+  const { data } = await sb.from('site_texte').select('wert').eq('key', 'verleih.aktiv').single();
+  const aktiv = !data || data.wert !== 'false'; // Standard: aktiv
+  const toggle = document.getElementById('verleih-aktiv-toggle');
+  const status = document.getElementById('verleih-aktiv-status');
+  if (toggle) toggle.checked = aktiv;
+  if (status) status.textContent = aktiv
+    ? '✓ Scheibe ist buchbar — Kunden können anfragen'
+    : '✗ Verleih deaktiviert — kein Buchungsformular sichtbar';
+}
+
+async function verleihAktivSpeichern(checkbox) {
+  const wert = checkbox.checked ? 'true' : 'false';
+  const status = document.getElementById('verleih-aktiv-status');
+  await sb.from('site_texte')
+    .upsert({ key: 'verleih.aktiv', wert, beschreibung: 'Scheibe aktuell verfügbar für Verleih' }, { onConflict: 'key' });
+  if (status) status.textContent = checkbox.checked
+    ? '✓ Scheibe ist buchbar — Kunden können anfragen'
+    : '✗ Verleih deaktiviert — kein Buchungsformular sichtbar';
 }
 
 async function verleihStatus(id, status) {

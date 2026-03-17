@@ -1552,6 +1552,7 @@ const siteData = {
     description: "Meine Scheibe ist ideal für zuhause — kompakt, leise und leistungsstark. Lieferung und Abholung inklusive im näheren Umkreis.",
     priceDay: "35 €",
     priceWeek: "120 €",
+    aktiv: "true", // 'false' = Verleih deaktiviert (per Admin Toggle steuerbar)
     perks: ["Lieferung & Abholung", "Einweisung inklusive", "Werkzeug-Set dabei", "Ton auf Wunsch"]
   },
 
@@ -1752,7 +1753,10 @@ function renderSite(data) {
   <div class="kal-wrapper reveal">
     <div class="kal-toggle">
       <button id="toggle-kurse"   class="kal-toggle-btn aktiv" onclick="setModus('kurse')">📅 Kurs buchen</button>
-      <button id="toggle-verleih" class="kal-toggle-btn"       onclick="setModus('verleih')">🔄 Scheibe leihen</button>
+      ${siteData.verleih.aktiv !== 'false'
+        ? `<button id="toggle-verleih" class="kal-toggle-btn" onclick="setModus('verleih')">🔄 Scheibe leihen</button>`
+        : `<button class="kal-toggle-btn" disabled style="opacity:0.4;cursor:default" title="Momentan nicht verfügbar">🔄 Scheibe leihen (nicht verfügbar)</button>`
+      }
     </div>
     <div id="kal-wrapper-sub" class="kal-wrapper-sub">Wähle einen grün markierten Tag im Kalender</div>
     <div id="kurs-kalender"><div class="kal-laden">Termine werden geladen …</div></div>
@@ -1819,7 +1823,10 @@ function renderSite(data) {
         <div class="rental-perks">
           ${d.verleih.perks.map(p => `<span class="perk">${p}</span>`).join('')}
         </div>
-        <button class="btn btn-primary" onclick="setModus('verleih');document.querySelector('.kal-wrapper').scrollIntoView({behavior:'smooth'})">Jetzt anfragen →</button>
+        ${siteData.verleih.aktiv !== 'false'
+          ? `<button class="btn btn-primary" onclick="setModus('verleih');document.querySelector('.kal-wrapper').scrollIntoView({behavior:'smooth'})">Jetzt anfragen →</button>`
+          : `<p style="color:var(--bark-muted);font-style:italic;margin-top:0.5rem">Momentan nicht verfügbar — bitte später nachschauen.</p>`
+        }
       </div>
     </div>
   </section>
