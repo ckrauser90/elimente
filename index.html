@@ -196,7 +196,7 @@ nav.scrolled {
   margin-bottom: 2.2rem;
 }
 
-.hero-actions { display: flex; gap: 1rem; align-items: center; }
+.hero-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
@@ -240,7 +240,7 @@ nav.scrolled {
 }
 
 .hero-organic {
-  width: 380px; height: 460px;
+  width: 440px; height: 530px;
   position: relative;
 }
 
@@ -877,7 +877,7 @@ textarea.form-field { resize: vertical; min-height: 130px; }
 .hero-foto {
   position: absolute;
   top: 20px; left: 30px;
-  width: 320px; height: 380px;
+  width: 380px; height: 450px;
   object-fit: cover;
   border-radius: 52% 48% 43% 57% / 55% 45% 55% 45%;
   animation: organicFloat 10s ease-in-out infinite;
@@ -1638,8 +1638,9 @@ function renderSite(data) {
       <h1>${d.hero.headline.replace(/\\n|\n/g, '<br>')}</h1>
       <p class="hero-desc">${d.hero.description}</p>
       <div class="hero-actions">
-        <a href="#kurse" class="btn btn-primary">${d.hero.buttonPrimary} →</a>
         <a href="#ueber" class="btn btn-ghost">${d.hero.buttonSecondary}</a>
+        <a href="#kurse" class="btn btn-primary">${d.hero.buttonPrimary} →</a>
+        <a href="https://www.etsy.com/de/shop/ELIMENTE" target="_blank" rel="noopener" class="btn btn-ghost">Etsy Shop ↗</a>
       </div>
     </div>
     <div class="hero-visual">
