@@ -393,6 +393,7 @@ tr:hover td { background: var(--cream); }
     <button class="tab-btn"       onclick="zeigeTab('texte')">✏️ Texte</button>
     <button class="tab-btn"       onclick="zeigeTab('verleih')">🔄 Verleih</button>
     <button class="tab-btn"       onclick="zeigeTab('kurstypen')">🎨 Kurstypen</button>
+    <button class="tab-btn"       onclick="zeigeTab('rechtliches')">⚖️ Rechtliches</button>
   </div>
 
   <!-- TAB: TERMINE -->
@@ -446,6 +447,54 @@ tr:hover td { background: var(--cream); }
       <button class="btn btn-primary" onclick="oeffneKurstypModal()">+ Neuer Kurstyp</button>
     </div>
     <div class="karten-grid" id="kurstypen-liste"><div class="laden">Wird geladen …</div></div>
+  </div>
+
+  <!-- TAB: RECHTLICHES -->
+  <div class="tab-inhalt" id="tab-rechtliches">
+    <div class="abschnitt-kopf">
+      <h2>Rechtliches</h2>
+    </div>
+
+    <!-- IMPRESSUM -->
+    <div class="texte-sektion">
+      <div class="texte-sektion-kopf">📄 Impressum</div>
+      <p style="padding:0 0 1rem;font-size:0.88rem;color:var(--text-muted)">
+        Diese Angaben erscheinen auf der öffentlichen Impressum-Seite.
+        E-Mail und Telefon werden automatisch aus dem „Kontakt"-Bereich übernommen.
+      </p>
+      <div class="texte-felder" id="rechtliches-impressum-felder">
+        <div class="laden">Wird geladen …</div>
+      </div>
+    </div>
+
+    <!-- DATENSCHUTZ -->
+    <div class="texte-sektion">
+      <div class="texte-sektion-kopf">🔒 Datenschutzerklärung</div>
+      <p style="padding:0.75rem 0;font-size:0.88rem;color:var(--text-muted);line-height:1.6">
+        Die Datenschutzerklärung enthält rechtlich vorgeschriebenen Text, der automatisch
+        die Kontaktdaten aus dem „Kontakt"-Bereich verwendet. Änderungen an Diensten
+        (Google Analytics, Buchungssystem etc.) müssen direkt in der Datei
+        <code>datenschutz.html</code> vorgenommen werden – am besten von jemandem mit
+        rechtlichen Kenntnissen.
+      </p>
+      <a href="../datenschutz.html" target="_blank" class="btn btn-secondary" style="display:inline-block;font-size:0.85rem">
+        Datenschutzerklärung ansehen →
+      </a>
+    </div>
+
+    <!-- AGB -->
+    <div class="texte-sektion">
+      <div class="texte-sektion-kopf">📋 AGB</div>
+      <p style="padding:0.75rem 0;font-size:0.88rem;color:var(--text-muted);line-height:1.6">
+        Die AGB regeln Keramik-Kauf, Töpferkurse und Töpferscheiben-Verleih.
+        Stornierungsfristen, Kautionshöhe und andere Konditionen können in der Datei
+        <code>agb.html</code> angepasst werden. Bei wesentlichen Änderungen bitte
+        rechtlichen Rat einholen.
+      </p>
+      <a href="../agb.html" target="_blank" class="btn btn-secondary" style="display:inline-block;font-size:0.85rem">
+        AGB ansehen →
+      </a>
+    </div>
   </div>
 
 </div>
@@ -993,6 +1042,12 @@ const TEXTE_FELDER = [
   { section: 'Footer', felder: [
     { key: 'footer.copyright', label: 'Copyright', typ: 'input', beschr: '' },
   ]},
+  { section: 'Impressum', felder: [
+    { key: 'impressum.name',    label: 'Vollständiger Name',      typ: 'input', beschr: 'Vor- und Nachname der Betreiberin (gesetzlich Pflicht)' },
+    { key: 'impressum.strasse', label: 'Straße und Hausnummer',   typ: 'input', beschr: 'z.B. Musterstraße 12' },
+    { key: 'impressum.plz_ort', label: 'PLZ und Ort',             typ: 'input', beschr: 'z.B. 12345 Berlin' },
+    { key: 'impressum.ustid',   label: 'Umsatzsteuer-ID',         typ: 'input', beschr: 'Optional – nur ausfüllen, falls vorhanden' },
+  ]},
 ];
 
 let _siteTexte = {}; // Key → Wert Cache
@@ -1001,6 +1056,7 @@ async function ladeTexte() {
   const { data } = await sb.from('site_texte').select('key, wert');
   if (data) data.forEach(r => { _siteTexte[r.key] = r.wert; });
   renderTexte();
+  renderImpressumFelder(); // Impressum-Tab ebenfalls aktualisieren
 }
 
 function renderTexte() {
@@ -1040,6 +1096,59 @@ async function speichereText(key) {
   const wert = input.value;
   statusEl.textContent = 'Wird gespeichert …';
   statusEl.style.color = 'var(--bark-muted)';
+
+  const { error } = await sb.from('site_texte')
+    .upsert({ key, wert, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+
+  if (error) {
+    statusEl.textContent = 'Fehler beim Speichern.';
+    statusEl.style.color = 'var(--red)';
+  } else {
+    _siteTexte[key] = wert;
+    statusEl.textContent = '✓ Gespeichert';
+    statusEl.style.color = 'var(--green)';
+    setTimeout(() => { statusEl.textContent = ''; }, 3000);
+  }
+}
+
+// ── RECHTLICHES (Impressum-Felder) ───────────────────────
+
+// Rendert die Impressum-Eingabefelder im Rechtliches-Tab
+// (nutzt 'rtxt-' Präfix um ID-Konflikte mit dem Texte-Tab zu vermeiden)
+function renderImpressumFelder() {
+  const el = document.getElementById('rechtliches-impressum-felder');
+  if (!el) return;
+
+  const impressumGruppe = TEXTE_FELDER.find(g => g.section === 'Impressum');
+  if (!impressumGruppe) return;
+
+  el.innerHTML = impressumGruppe.felder.map(f => {
+    const id = f.key.replace('.', '-');
+    return `
+      <div class="texte-feld">
+        <div class="texte-feld-label">${f.label}</div>
+        ${f.beschr ? `<div class="texte-feld-beschr">${f.beschr}</div>` : ''}
+        <div class="texte-feld-row">
+          <input class="form-field" id="rtxt-${id}" type="text"
+                 value="${(_siteTexte[f.key] || '').replace(/"/g, '&quot;')}">
+          <button class="btn btn-primary btn-sm texte-speichern-btn"
+                  onclick="speichereImpressumText('${f.key}')">Speichern</button>
+        </div>
+        <div class="texte-status" id="rstatus-${id}"></div>
+      </div>`;
+  }).join('');
+}
+
+// Speichert ein Impressum-Feld (liest aus rtxt- Inputs im Rechtliches-Tab)
+async function speichereImpressumText(key) {
+  const id       = key.replace('.', '-');
+  const input    = document.getElementById('rtxt-' + id);
+  const statusEl = document.getElementById('rstatus-' + id);
+  if (!input) return;
+
+  const wert = input.value.trim();
+  statusEl.textContent = 'Wird gespeichert …';
+  statusEl.style.color = 'var(--text-muted)';
 
   const { error } = await sb.from('site_texte')
     .upsert({ key, wert, updated_at: new Date().toISOString() }, { onConflict: 'key' });

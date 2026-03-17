@@ -145,38 +145,24 @@ body {
   <p class="subtitle">Angaben gemäß § 5 TMG</p>
 
   <h2>Angaben zur Person</h2>
-  <!-- ⚠️ BITTE AUSFÜLLEN: Vollständiger Name der Betreiberin -->
-  <div class="placeholder-hint">⚠️ Bitte ausfüllen: Vollständiger Vorname und Nachname</div>
-  <p>
-    [Vorname Nachname]<br>
-    <!-- ⚠️ BITTE AUSFÜLLEN: Vollständige Adresse -->
-    [Straße und Hausnummer]<br>
-    [PLZ Ort]<br>
-    Deutschland
+  <p id="imp-person">
+    <!-- wird per JavaScript aus Supabase geladen -->
+    <span style="color:var(--bark-muted);font-style:italic">Wird geladen …</span>
   </p>
 
   <h2>Kontakt</h2>
-  <!-- ⚠️ BITTE AUSFÜLLEN: Echte Kontaktdaten einsetzen -->
-  <div class="placeholder-hint">⚠️ Bitte echte E-Mail-Adresse und Telefonnummer eintragen</div>
-  <p>
-    E-Mail: <a href="mailto:hallo@elimente-keramik.de">hallo@elimente-keramik.de</a><br>
-    Telefon: 0123 – 456 789 0
+  <p id="imp-kontakt">
+    <span style="color:var(--bark-muted);font-style:italic">Wird geladen …</span>
   </p>
 
   <h2>Umsatzsteuer-Identifikationsnummer</h2>
-  <p>
-    Sofern eine Umsatzsteuer-ID vorhanden ist, wird diese hier angegeben.<br>
-    <!-- ⚠️ BITTE AUSFÜLLEN oder Absatz entfernen, falls keine USt-ID -->
-    <span style="color:var(--bark-muted);font-style:italic">(Umsatzsteuer-ID ggf. hier ergänzen oder diesen Absatz entfernen)</span>
+  <p id="imp-ustid">
+    <span style="color:var(--bark-muted);font-style:italic">Wird geladen …</span>
   </p>
 
   <h2>Verantwortlich für den Inhalt (§ 55 Abs. 2 RStV)</h2>
-  <!-- ⚠️ BITTE AUSFÜLLEN: Gleiche Person wie oben -->
-  <div class="placeholder-hint">⚠️ Bitte Namen und Adresse wiederholen</div>
-  <p>
-    [Vorname Nachname]<br>
-    [Straße und Hausnummer]<br>
-    [PLZ Ort]
+  <p id="imp-verantwortlich">
+    <span style="color:var(--bark-muted);font-style:italic">Wird geladen …</span>
   </p>
 
   <h2>Streitschlichtung</h2>
@@ -224,20 +210,80 @@ body {
   </p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.local.js" onerror="/* kein config.local.js – ok auf dem Server */"></script>
 <script>
-/* Google Fonts nach gespeicherter Cookie-Einwilligung laden */
-(function() {
+/* ─── Impressum-Daten aus Supabase laden ─── */
+(async function() {
+  // Google Fonts nach Einwilligung laden
   if (localStorage.getItem('elimente_cookie_consent') === 'all') {
     const preconnect = document.createElement('link');
     preconnect.rel = 'preconnect';
     preconnect.href = 'https://fonts.googleapis.com';
     document.head.appendChild(preconnect);
-
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap';
     document.head.appendChild(link);
   }
+
+  // Supabase-Verbindung (Credentials aus config.local.js oder siteData)
+  const SUPABASE_URL      = window.SUPABASE_URL      || '';
+  const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+
+  if (!SUPABASE_URL || SUPABASE_URL.startsWith('DEINE')) {
+    // Noch keine Supabase-Verbindung – Hinweis anzeigen
+    const hinweis = '<span style="color:#b45309;font-style:italic">⚠️ Bitte im Admin-Bereich ausfüllen (Tab: Rechtliches)</span>';
+    document.getElementById('imp-person').innerHTML = hinweis;
+    document.getElementById('imp-kontakt').innerHTML = hinweis;
+    document.getElementById('imp-ustid').innerHTML = 'Noch nicht eingetragen.';
+    document.getElementById('imp-verantwortlich').innerHTML = hinweis;
+    return;
+  }
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data } = await sb.from('site_texte').select('key, wert')
+    .in('key', ['impressum.name','impressum.strasse','impressum.plz_ort','impressum.ustid',
+                'kontakt.email','kontakt.telefon']);
+
+  if (!data) return;
+
+  const t = {};
+  data.forEach(r => { t[r.key] = r.wert; });
+
+  const fallback = '<span style="color:#b45309;font-style:italic">⚠️ Im Admin ausfüllen → Tab „Rechtliches"</span>';
+
+  const name    = t['impressum.name']    || '';
+  const strasse = t['impressum.strasse'] || '';
+  const plzOrt  = t['impressum.plz_ort'] || '';
+  const email   = t['kontakt.email']     || '';
+  const telefon = t['kontakt.telefon']   || '';
+  const ustid   = t['impressum.ustid']   || '';
+
+  // Person & Adresse
+  document.getElementById('imp-person').innerHTML =
+    (name && strasse && plzOrt)
+      ? `${name}<br>${strasse}<br>${plzOrt}<br>Deutschland`
+      : fallback;
+
+  // Kontakt
+  document.getElementById('imp-kontakt').innerHTML =
+    (email || telefon)
+      ? `${email    ? `E-Mail: <a href="mailto:${email}">${email}</a><br>` : ''}` +
+        `${telefon  ? `Telefon: ${telefon}` : ''}`
+      : fallback;
+
+  // USt-ID (optional)
+  document.getElementById('imp-ustid').innerHTML =
+    ustid
+      ? `Umsatzsteuer-Identifikationsnummer: ${ustid}`
+      : 'Keine Umsatzsteuer-ID vorhanden (Kleinunternehmerregelung oder noch nicht eingetragen).';
+
+  // Verantwortlich
+  document.getElementById('imp-verantwortlich').innerHTML =
+    (name && strasse && plzOrt)
+      ? `${name}<br>${strasse}<br>${plzOrt}`
+      : fallback;
 })();
 </script>
 
