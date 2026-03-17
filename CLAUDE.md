@@ -19,7 +19,7 @@ Alle Texte, Preise und Kontaktdaten stehen im `siteData` Objekt. Nur dort Inhalt
 
 ### Bereiche der Website
 - **Hero**: Startseite mit Headline und Call-to-Action
-- **Über uns** (`#ueber`): Geschichte und Zitat
+- **Über mich** (`#ueber`): Geschichte und Zitat
 - **Angebote** (`#angebote`): 3 Karten (Kaufen, Kurse, Verleih)
 - **Kurse** (`#kurse`): Dynamisch aus `siteData.kurse[]` Array
 - **Galerie** (`#galerie`): Platzhalter mit Emojis (echte Fotos folgen)
