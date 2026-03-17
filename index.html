@@ -516,8 +516,23 @@ section {
   border-color: var(--sage) !important;
   transform: translateY(-2px);
 }
+.kurs-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.kurs-verfuegbar {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.kurs-verfuegbar-frei { color: var(--sage); }
+.kurs-verfuegbar-voll { color: var(--bark-muted); }
 .kurs-cta-link {
-  margin-top: 0.8rem;
   font-size: 0.85rem;
   color: var(--sage);
   font-weight: 600;
@@ -1378,7 +1393,12 @@ function renderSite(data) {
     </div>
     <div class="kurs-list">
       ${_kurstypen.length > 0
-        ? _kurstypen.map(k => `
+        ? _kurstypen.map(k => {
+            const freiTermine = _termine.filter(t => t.kurs_typen?.id === k.id && t.status === 'offen').length;
+            const verfuegbar = freiTermine > 0
+              ? `<span class="kurs-verfuegbar kurs-verfuegbar-frei">● ${freiTermine} Termin${freiTermine > 1 ? 'e' : ''} verfügbar</span>`
+              : `<span class="kurs-verfuegbar kurs-verfuegbar-voll">● Keine freien Termine</span>`;
+            return `
           <div class="kurs-item kurs-item-klickbar reveal" onclick="zeigeKursImKalender('${k.id}')">
             <div class="kurs-tags">
               <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : 'tag-level'}">${k.level}</span>
@@ -1386,9 +1406,9 @@ function renderSite(data) {
             <h3>${k.name}</h3>
             ${k.description ? `<p>${k.description}</p>` : ''}
             <div class="kurs-price">${k.price}${k.duration ? ` <small>/ ${k.duration}</small>` : ''}</div>
-            <div class="kurs-cta-link">Termin buchen →</div>
-          </div>
-        `).join('')
+            <div class="kurs-footer">${verfuegbar}<span class="kurs-cta-link">Termin buchen →</span></div>
+          </div>`;
+          }).join('')
         : d.kurse.map(k => `
           <div class="kurs-item reveal">
             <div class="kurs-tags">
@@ -1575,7 +1595,7 @@ let _kalMonat        = new Date(); _kalMonat.setDate(1);
   const cfg = siteData.supabase;
   if (cfg && cfg.url && !cfg.url.startsWith('DEINE')) {
     _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
-    await Promise.all([ladeSiteTexte(), ladeBilder(), ladeAktiveKurstypen()]); // Texte, Fotos & Kurstypen laden
+    await Promise.all([ladeSiteTexte(), ladeBilder(), ladeAktiveKurstypen(), ladeKursTermine()]); // Texte, Fotos, Kurstypen & Termine laden
   }
 
   renderSite(siteData); // Mit ggf. aktualisierten Texten rendern
