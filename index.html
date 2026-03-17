@@ -712,6 +712,42 @@ section {
   font-weight: 700;
 }
 
+/* ─── STANDORT ─── */
+#standort { background: var(--linen); }
+.standort-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 3rem;
+  align-items: start;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.standort-adresse h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  color: var(--bark);
+  margin-bottom: 1.2rem;
+}
+.standort-adresse p {
+  color: var(--bark-muted);
+  line-height: 1.8;
+  font-size: 1rem;
+}
+.standort-map {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(62,56,50,0.10);
+  aspect-ratio: 4/3;
+}
+.standort-map iframe {
+  width: 100%; height: 100%;
+  border: none;
+  display: block;
+}
+@media (max-width: 700px) {
+  .standort-grid { grid-template-columns: 1fr; }
+}
+
 /* ─── KONTAKT ─── */
 #kontakt { background: var(--linen); }
 
@@ -1141,11 +1177,11 @@ footer a:hover { color: var(--moss); }
 @media (max-width: 960px) {
   .hero {
     grid-template-columns: 1fr;
-    min-height: 85vh;
+    min-height: 60vh;
     padding-top: 5rem;
     padding-bottom: 3rem;
   }
-  /* Bild als transparenter Hintergrund hinter dem Text */
+  /* Bild als sehr leichter transparenter Hintergrund hinter dem Text */
   .hero-visual {
     position: absolute;
     inset: 0;
@@ -1153,7 +1189,7 @@ footer a:hover { color: var(--moss); }
     align-items: stretch;
     justify-content: stretch;
     padding: 0;
-    opacity: 0.22;
+    opacity: 0.10;
     z-index: 0;
   }
   .hero-organic {
@@ -1494,6 +1530,7 @@ function renderSite(data) {
       <li><a href="#kurse">Kurse</a></li>
       <li><a href="#galerie">Galerie</a></li>
       <li><a href="#verleih">Verleih</a></li>
+      <li><a href="#standort">Standort</a></li>
     </ul>
     <button class="hamburger" aria-label="Menü" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">
       <span></span><span></span><span></span>
@@ -1677,6 +1714,34 @@ function renderSite(data) {
           ${d.verleih.perks.map(p => `<span class="perk">${p}</span>`).join('')}
         </div>
         <button class="btn btn-primary" onclick="setModus('verleih');document.querySelector('.kal-wrapper').scrollIntoView({behavior:'smooth'})">Jetzt anfragen →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STANDORT -->
+  <section id="standort">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Standort</div>
+      <h2>Hier findest du mich</h2>
+    </div>
+    <div class="standort-grid reveal">
+      <div class="standort-adresse">
+        <h3>${d.name}</h3>
+        <p>
+          ${d.kontakt.adresse}<br>
+          <br>
+          📧 ${d.kontakt.email}<br>
+          📞 ${d.kontakt.telefon}<br>
+          📸 ${d.kontakt.instagram}
+        </p>
+      </div>
+      <div class="standort-map">
+        <iframe
+          src="https://maps.google.com/maps?q=${encodeURIComponent(d.kontakt.adresse)}&output=embed&z=15"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Standort ${d.name}">
+        </iframe>
       </div>
     </div>
   </section>
@@ -2228,12 +2293,25 @@ async function kalBuchungSenden(e) {
     }, 3500);
   } else {
     const name  = document.getElementById('b-name').value.trim();
-    const email = document.getElementById('b-email').value.trim();
     const datumStr = new Date(_selDatum + 'T00:00:00')
       .toLocaleDateString('de-DE', { day: 'numeric', month: 'long' });
-
-    // Escaping zur XSS-Prävention (name/email kommen aus User-Input)
     const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    // Termin optimistisch lokal als gebucht markieren (Kalender-Dots sofort aktualisieren)
+    const idx = _termine.findIndex(t => t.id === _selTermin.id);
+    if (idx !== -1) {
+      _termine[idx] = { ..._termine[idx], buchungen_count: (_termine[idx].buchungen_count || 0) + 1 };
+      if (_termine[idx].buchungen_count >= _termine[idx].max_teilnehmer) {
+        _termine[idx].status = 'voll';
+      }
+    }
+
+    // Kalender neu rendern (zeigt aktualisierte Dots) – Panel danach überschreiben
+    _selDatum = null;
+    _selTermin = null;
+    renderKalender();
+
+    // Erfolgsmeldung ins Panel setzen (überschreibt den leeren Platzhalter)
     document.getElementById('kal-panel').innerHTML = `
       <div class="kal-erfolg">
         <div class="kal-erfolg-haken">✓</div>
@@ -2244,8 +2322,7 @@ async function kalBuchungSenden(e) {
                 style="margin-top:1.2rem">Weiteren Termin buchen</button>
       </div>`;
 
-    _selTermin = null;
-    ladeKursTermine(); // Daten still aktualisieren – Panel bleibt sichtbar bis Nutzer klickt
+    ladeKursTermine(); // DB still im Hintergrund aktualisieren
   }
 }
 
