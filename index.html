@@ -419,6 +419,13 @@ section {
   margin-bottom: 1.2rem;
   display: block;
 }
+.offer-icon {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  margin-bottom: 1.2rem;
+  display: block;
+}
 
 .offer-card h3 {
   font-size: 1.4rem;
@@ -1510,19 +1517,19 @@ function renderSite(data) {
     </div>
     <div class="offer-cards">
       <div class="offer-card reveal">
-        <span class="offer-emoji">🎨</span>
+        ${_bilder.icons.kaufen ? `<img src="${_bilder.icons.kaufen.url}" alt="Keramik kaufen" class="offer-icon">` : `<span class="offer-emoji">🎨</span>`}
         <h3>Keramik kaufen</h3>
         <p>Jedes Stück ein Unikat — handgedreht und liebevoll glasiert. Von Tassen bis zu Vasen und Dekoration.</p>
         <a href="#galerie" class="card-link">Zur Galerie →</a>
       </div>
       <div class="offer-card reveal">
-        <span class="offer-emoji">🤲</span>
+        ${_bilder.icons.kurse ? `<img src="${_bilder.icons.kurse.url}" alt="Kurse" class="offer-icon">` : `<span class="offer-emoji">🤲</span>`}
         <h3>Kurse besuchen</h3>
         <p>In kleinen Gruppen lernst du die Kunst des Töpferns — ob Anfänger oder Fortgeschrittene.</p>
         <a href="#kurse" class="card-link">Kursangebot →</a>
       </div>
       <div class="offer-card reveal">
-        <span class="offer-emoji">⚙️</span>
+        ${_bilder.icons.verleih ? `<img src="${_bilder.icons.verleih.url}" alt="Scheibe leihen" class="offer-icon">` : `<span class="offer-emoji">⚙️</span>`}
         <h3>Scheibe leihen</h3>
         <p>Du hast Erfahrung? Leihe eine professionelle Töpferscheibe und arbeite flexibel bei dir zuhause.</p>
         <a href="#verleih" class="card-link">Mehr erfahren →</a>
@@ -1733,7 +1740,7 @@ function initScrollEffects() {
 // Zustand
 let _sb              = null;
 let _modus           = 'kurse';
-let _bilder          = { hero: null, about: null, galerie: [] };
+let _bilder          = { hero: null, about: null, galerie: [], icons: { kaufen: null, kurse: null, verleih: null } };
 let _kurstypen       = [];
 let _filterKurstyp   = null; // null = alle, oder kurstyp-ID
 let _termine         = [];
@@ -1767,9 +1774,12 @@ let _kalMonat        = new Date(); _kalMonat.setDate(1);
 async function ladeBilder() {
   const { data } = await _sb.from('galerie_bilder').select('*').eq('aktiv', true).order('sort_order');
   if (!data) return;
-  _bilder.hero    = data.find(b => b.bereich === 'hero')  || null;
-  _bilder.about   = data.find(b => b.bereich === 'about') || null;
-  _bilder.galerie = data.filter(b => b.bereich === 'galerie');
+  _bilder.hero             = data.find(b => b.bereich === 'hero')         || null;
+  _bilder.about            = data.find(b => b.bereich === 'about')        || null;
+  _bilder.galerie          = data.filter(b => b.bereich === 'galerie');
+  _bilder.icons.kaufen     = data.find(b => b.bereich === 'icon_kaufen')  || null;
+  _bilder.icons.kurse      = data.find(b => b.bereich === 'icon_kurse')   || null;
+  _bilder.icons.verleih    = data.find(b => b.bereich === 'icon_verleih') || null;
 }
 
 // Texte aus Supabase laden und in siteData einsetzen

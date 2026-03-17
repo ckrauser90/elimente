@@ -800,14 +800,17 @@ async function speichereTermin() {
 
 // ── FOTOS ────────────────────────────────────────────────
 
-let _adminBilder = { hero: null, about: null, galerie: [] };
+let _adminBilder = { hero: null, about: null, galerie: [], icons: { kaufen: null, kurse: null, verleih: null } };
 
 async function ladeFotos() {
   const { data } = await sb.from('galerie_bilder').select('*').order('sort_order');
   if (data) {
-    _adminBilder.hero    = data.find(b => b.bereich === 'hero')  || null;
-    _adminBilder.about   = data.find(b => b.bereich === 'about') || null;
-    _adminBilder.galerie = data.filter(b => b.bereich === 'galerie');
+    _adminBilder.hero          = data.find(b => b.bereich === 'hero')         || null;
+    _adminBilder.about         = data.find(b => b.bereich === 'about')        || null;
+    _adminBilder.galerie       = data.filter(b => b.bereich === 'galerie');
+    _adminBilder.icons.kaufen  = data.find(b => b.bereich === 'icon_kaufen')  || null;
+    _adminBilder.icons.kurse   = data.find(b => b.bereich === 'icon_kurse')   || null;
+    _adminBilder.icons.verleih = data.find(b => b.bereich === 'icon_verleih') || null;
   }
   renderFotos();
 }
@@ -888,6 +891,36 @@ function renderFotos() {
             }).join('')}
           </div>
           <div class="foto-progress" id="progress-galerie" style="margin-top:0.8rem"></div>
+        </div>
+      </div>
+
+      <!-- Angebots-Icons -->
+      <div class="foto-bereich">
+        <div class="foto-bereich-kopf">Angebots-Icons <small>Transparente PNGs für die "Mein Angebot"-Karten · max. 5 MB</small></div>
+        <div class="foto-bereich-inhalt">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+            ${[
+              { key: 'kaufen',  label: 'Keramik kaufen' },
+              { key: 'kurse',   label: 'Kurse besuchen' },
+              { key: 'verleih', label: 'Scheibe leihen' }
+            ].map(item => {
+              const bild = _adminBilder.icons[item.key];
+              return `
+                <div style="text-align:center">
+                  <div class="foto-vorschau" style="width:100%;height:120px;display:flex;align-items:center;justify-content:center;background:var(--cream-dark);border-radius:8px;margin-bottom:0.6rem">
+                    ${bild ? `<img src="${bild.url}" alt="" style="max-width:80px;max-height:80px;object-fit:contain">` : '<span style="font-size:2rem;opacity:0.3">🖼</span>'}
+                  </div>
+                  <div style="font-size:0.82rem;font-weight:600;margin-bottom:0.5rem">${item.label}</div>
+                  <input type="file" accept="image/png,image/svg+xml,image/*" id="upload-icon-${item.key}" class="foto-upload-input"
+                         onchange="uploadFoto('icon_${item.key}', this)">
+                  <label for="upload-icon-${item.key}" class="btn btn-primary btn-sm">📁 Hochladen</label>
+                  ${bild ? `<button class="btn btn-danger btn-sm" style="margin-top:0.3rem" onclick="loescheFoto('${bild.id}','${bild.storage_path || ''}','icon_${item.key}')">🗑</button>` : ''}
+                </div>`;
+            }).join('')}
+          </div>
+          <div class="foto-progress" id="progress-icon_kaufen" style="margin-top:0.8rem"></div>
+          <div class="foto-progress" id="progress-icon_kurse"></div>
+          <div class="foto-progress" id="progress-icon_verleih"></div>
         </div>
       </div>
 
