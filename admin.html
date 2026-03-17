@@ -993,6 +993,12 @@ const TEXTE_FELDER = [
   { section: 'Footer', felder: [
     { key: 'footer.copyright', label: 'Copyright', typ: 'input', beschr: '' },
   ]},
+  { section: 'Rechtliches (Impressum, Datenschutz, AGB)', felder: [
+    { key: 'legal.name',    label: 'Vollständiger Name',  typ: 'input', beschr: 'Vor- und Nachname der Betreiberin — erscheint in Impressum, Datenschutz und AGB' },
+    { key: 'legal.strasse', label: 'Straße & Hausnummer', typ: 'input', beschr: '' },
+    { key: 'legal.plz_ort', label: 'PLZ und Ort',         typ: 'input', beschr: 'z.B. 12345 Musterstadt' },
+    { key: 'legal.ustid',   label: 'USt-ID (optional)',   typ: 'input', beschr: 'Leer lassen wenn nicht vorhanden — Absatz wird dann ausgeblendet' },
+  ]},
 ];
 
 let _siteTexte = {}; // Key → Wert Cache

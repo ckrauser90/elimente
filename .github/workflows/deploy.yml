@@ -47,6 +47,12 @@ jobs:
           sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" index.html
           sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" admin.html
           sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" admin.html
+          sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" impressum.html
+          sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" impressum.html
+          sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" datenschutz.html
+          sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" datenschutz.html
+          sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" agb.html
+          sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" agb.html
 
       - name: GitHub Pages konfigurieren
         uses: actions/configure-pages@v5

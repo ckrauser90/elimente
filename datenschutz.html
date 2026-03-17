@@ -171,13 +171,13 @@ body {
   <p class="subtitle">Stand: März 2026 · gemäß DSGVO und BDSG</p>
 
   <h2>1. Verantwortliche</h2>
-  <div class="placeholder-hint">⚠️ Bitte Namen und Adresse eintragen (wie im Impressum)</div>
+  <div class="placeholder-hint">⚠️ Bitte im Admin-Bereich unter Texte → Rechtliches ausfüllen</div>
   <p>
     Verantwortlich für die Verarbeitung personenbezogener Daten auf dieser Website ist:<br><br>
-    [Vorname Nachname]<br>
-    [Straße und Hausnummer]<br>
-    [PLZ Ort]<br>
-    E-Mail: <a href="mailto:hallo@elimente-keramik.de">hallo@elimente-keramik.de</a>
+    <span data-legal="name">[Vorname Nachname]</span><br>
+    <span data-legal="strasse">[Straße und Hausnummer]</span><br>
+    <span data-legal="plz_ort">[PLZ Ort]</span><br>
+    E-Mail: <a data-legal="email" href="mailto:hallo@elimente-keramik.de">hallo@elimente-keramik.de</a>
   </p>
 
   <h2>2. Deine Rechte</h2>
@@ -191,7 +191,7 @@ body {
     <li>Recht auf Widerspruch (Art. 21 DSGVO)</li>
     <li>Recht auf Beschwerde bei einer Aufsichtsbehörde (Art. 77 DSGVO)</li>
   </ul>
-  <p>Für Anfragen: <a href="mailto:hallo@elimente-keramik.de">hallo@elimente-keramik.de</a></p>
+  <p>Für Anfragen: <a data-legal="email" href="mailto:hallo@elimente-keramik.de">hallo@elimente-keramik.de</a></p>
 
   <h2>3. Hosting</h2>
   <p>
@@ -299,25 +299,43 @@ body {
   </p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-/* Cookie-Einstellungen zurücksetzen: Banner erscheint beim nächsten Seitenaufruf wieder */
+const _SB_URL = window.SUPABASE_URL || "DEINE_SUPABASE_URL";
+const _SB_KEY = window.SUPABASE_ANON_KEY || "DEIN_SUPABASE_ANON_KEY";
+
 function cookieEinstellungenZuruecksetzen() {
   localStorage.removeItem('elimente_cookie_consent');
   alert('Cookie-Einstellungen wurden zurückgesetzt. Beim nächsten Besuch der Startseite erscheint der Banner erneut.');
 }
 
-/* Google Fonts nach gespeicherter Einwilligung laden */
-(function() {
+(async function() {
   if (localStorage.getItem('elimente_cookie_consent') === 'all') {
-    const preconnect = document.createElement('link');
-    preconnect.rel = 'preconnect';
-    preconnect.href = 'https://fonts.googleapis.com';
-    document.head.appendChild(preconnect);
-
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Karla:wght@300;400;500;600&display=swap';
     document.head.appendChild(link);
+  }
+
+  if (_SB_URL.startsWith('DEINE')) return;
+  const sb = window.supabase.createClient(_SB_URL, _SB_KEY);
+  const { data } = await sb.from('site_texte').select('key, wert');
+  if (!data) return;
+
+  const t = {};
+  data.forEach(r => { t[r.key] = r.wert; });
+
+  document.querySelectorAll('[data-legal]').forEach(el => {
+    const k = el.dataset.legal;
+    const val = t['legal.' + k] || t['kontakt.' + k];
+    if (!val) return;
+    el.textContent = val;
+    if (el.tagName === 'A' && k === 'email') el.href = 'mailto:' + val;
+  });
+
+  const name = t['legal.name'];
+  if (name && !name.includes('[')) {
+    document.querySelectorAll('.placeholder-hint').forEach(el => el.style.display = 'none');
   }
 })();
 </script>

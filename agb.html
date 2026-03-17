@@ -175,10 +175,10 @@ body {
 
   <h2>§ 1 Geltungsbereich und Vertragspartner</h2>
   <span class="abschnitt-label">Keramik-Verkauf &amp; Kurse</span>
-  <div class="placeholder-hint">⚠️ Bitte Namen und Adresse eintragen</div>
+  <div class="placeholder-hint">⚠️ Bitte im Admin-Bereich unter Texte → Rechtliches ausfüllen</div>
   <p>
     Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen<br>
-    <strong>[Vorname Nachname], [Straße], [PLZ Ort]</strong> (nachfolgend „Anbieter")
+    <strong><span data-legal="name">[Vorname Nachname]</span>, <span data-legal="strasse">[Straße]</span>, <span data-legal="plz_ort">[PLZ Ort]</span></strong> (nachfolgend „Anbieter")
     und Kunden bezüglich:
   </p>
   <ul>
@@ -370,19 +370,37 @@ body {
   </p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-/* Google Fonts nach gespeicherter Einwilligung laden */
-(function() {
-  if (localStorage.getItem('elimente_cookie_consent') === 'all') {
-    const preconnect = document.createElement('link');
-    preconnect.rel = 'preconnect';
-    preconnect.href = 'https://fonts.googleapis.com';
-    document.head.appendChild(preconnect);
+const _SB_URL = window.SUPABASE_URL || "DEINE_SUPABASE_URL";
+const _SB_KEY = window.SUPABASE_ANON_KEY || "DEIN_SUPABASE_ANON_KEY";
 
+(async function() {
+  if (localStorage.getItem('elimente_cookie_consent') === 'all') {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Karla:wght@300;400;500;600&display=swap';
     document.head.appendChild(link);
+  }
+
+  if (_SB_URL.startsWith('DEINE')) return;
+  const sb = window.supabase.createClient(_SB_URL, _SB_KEY);
+  const { data } = await sb.from('site_texte').select('key, wert');
+  if (!data) return;
+
+  const t = {};
+  data.forEach(r => { t[r.key] = r.wert; });
+
+  document.querySelectorAll('[data-legal]').forEach(el => {
+    const k = el.dataset.legal;
+    const val = t['legal.' + k] || t['kontakt.' + k];
+    if (!val) return;
+    el.textContent = val;
+  });
+
+  const name = t['legal.name'];
+  if (name && !name.includes('[')) {
+    document.querySelectorAll('.placeholder-hint').forEach(el => el.style.display = 'none');
   }
 })();
 </script>
