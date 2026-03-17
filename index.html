@@ -1152,9 +1152,9 @@ const siteData = {
   hero: {
     label: "Handgemachte Keramik mit Herz",
     headline: 'Erde, Wasser,\nFeuer — <span class="accent">Elimente.</span>',
-    description: "Entdecke handgefertigte Keramik, lerne Töpfern in unseren Kursen oder leihe dir eine Töpferscheibe für dein eigenes Projekt.",
+    description: "Entdecke handgefertigte Keramik, lerne Töpfern in meinen Kursen oder leihe dir eine Töpferscheibe für dein eigenes Projekt.",
     buttonPrimary: "Kurse entdecken",
-    buttonSecondary: "Unsere Geschichte"
+    buttonSecondary: "Meine Geschichte"
   },
 
   // ── Über uns ──
@@ -1214,7 +1214,7 @@ const siteData = {
   // ── Töpferscheiben-Verleih ──
   verleih: {
     title: "Professionelle Töpferscheibe",
-    description: "Unsere Scheiben sind ideal für zuhause — kompakt, leise und leistungsstark. Lieferung und Abholung inklusive im näheren Umkreis.",
+    description: "Meine Scheibe ist ideal für zuhause — kompakt, leise und leistungsstark. Lieferung und Abholung inklusive im näheren Umkreis.",
     priceDay: "35 €",
     priceWeek: "120 €",
     perks: ["Lieferung & Abholung", "Einweisung inklusive", "Werkzeug-Set dabei", "Ton auf Wunsch"]
@@ -1249,7 +1249,7 @@ function renderSite(data) {
   <nav id="mainNav">
     <div class="logo">${d.name}<span class="logo-dot"></span></div>
     <ul class="nav-links">
-      <li><a href="#ueber">Über uns</a></li>
+      <li><a href="#ueber">Über mich</a></li>
       <li><a href="#angebote">Angebote</a></li>
       <li><a href="#kurse">Kurse</a></li>
       <li><a href="#galerie">Galerie</a></li>
@@ -1297,7 +1297,7 @@ function renderSite(data) {
         </div>
       </div>
       <div class="about-text reveal">
-        <div class="section-label">Über uns</div>
+        <div class="section-label">Über mich</div>
         <blockquote>${d.about.quote}</blockquote>
         <p>${d.about.text1}</p>
         <p>${d.about.text2}</p>
@@ -1308,7 +1308,7 @@ function renderSite(data) {
   <!-- ANGEBOTE -->
   <section id="angebote">
     <div class="section-intro centered reveal">
-      <div class="section-label">Unser Angebot</div>
+      <div class="section-label">Mein Angebot</div>
       <h2>Drei Wege zur Keramik</h2>
       <p>Ob kaufen, lernen oder selbst machen — finde deinen Weg.</p>
     </div>
@@ -1371,7 +1371,7 @@ function renderSite(data) {
     <div class="section-intro centered reveal">
       <div class="section-label">Galerie</div>
       <h2>Handgefertigte Stücke</h2>
-      <p>Ein Einblick in die Welt unserer Keramik.</p>
+      <p>Ein Einblick in die Welt meiner Keramik.</p>
     </div>
     <div class="gallery-masonry reveal">
       ${_bilder.galerie.length > 0
@@ -1426,12 +1426,12 @@ function renderSite(data) {
   <section id="kontakt">
     <div class="section-intro centered reveal">
       <div class="section-label">Kontakt</div>
-      <h2>Schreib uns</h2>
-      <p>Wir freuen uns auf deine Nachricht.</p>
+      <h2>Schreib mir</h2>
+      <p>Ich freue mich auf deine Nachricht.</p>
     </div>
     <div class="contact-layout reveal">
       <div class="contact-details">
-        <h3>So erreichst du uns</h3>
+        <h3>So erreichst du mich</h3>
         <div class="contact-line">
           <div class="contact-icon">📍</div>
           <div><div class="label">Adresse</div><div class="value">${d.kontakt.adresse}</div></div>
@@ -1851,7 +1851,7 @@ function verleihPanel() {
         <button type="button" class="btn btn-ghost" style="font-size:0.78rem;padding:0.5rem 1rem"
                 onclick="_verleihStart=null;_verleihEnde=null;renderKalender()">↩ Zurück</button>
       </div>
-      <p class="kal-kleingedruckt">* Pflichtfelder · Wir melden uns per E-Mail zur Bestätigung.</p>
+      <p class="kal-kleingedruckt">* Pflichtfelder · Ich melde mich per E-Mail zur Bestätigung.</p>
     </form>
   </div>`;
 }
@@ -1915,7 +1915,7 @@ async function verleihBuchungSenden(e) {
       <div class="kal-erfolg">
         <div class="kal-erfolg-haken">✓</div>
         <h3>Anfrage eingegangen!</h3>
-        <p>Danke, <strong>${name}</strong>! Wir melden uns per E-Mail an <strong>${email}</strong>.</p>
+        <p>Danke, <strong>${name}</strong>! Ich melde mich per E-Mail an <strong>${email}</strong>.</p>
         <button class="btn btn-ghost" onclick="_verleihStart=null;_verleihEnde=null;ladeUndRenderKalender()"
                 style="margin-top:1.2rem">Neue Anfrage stellen</button>
       </div>`;
@@ -1961,8 +1961,8 @@ async function kalBuchungSenden(e) {
       <div class="kal-erfolg">
         <div class="kal-erfolg-haken">✓</div>
         <h3>Buchung eingegangen!</h3>
-        <p>Danke, <strong>${name}</strong>! Deine Anfrage für den <strong>${datumStr}</strong> ist bei uns eingegangen.</p>
-        <p>Wir melden uns per E-Mail an <strong>${email}</strong>.</p>
+        <p>Danke, <strong>${name}</strong>! Deine Anfrage für den <strong>${datumStr}</strong> ist eingegangen.</p>
+        <p>Ich melde mich per E-Mail an <strong>${email}</strong>.</p>
         <button class="btn btn-ghost" onclick="_selDatum=null;_selTermin=null;ladeUndRenderKalender()"
                 style="margin-top:1.2rem">Weiteren Termin buchen</button>
       </div>`;
