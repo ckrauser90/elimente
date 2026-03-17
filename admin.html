@@ -706,13 +706,28 @@ function renderTermine() {
                 <button class="btn btn-ghost btn-sm" onclick="bearbeiteTermin('${t.id}')">Bearbeiten</button>
                 ${t.status === 'abgesagt'
                   ? `<button class="btn btn-success btn-sm" onclick="terminStatusAendern('${t.id}','offen')">Reaktivieren</button>`
-                  : `<button class="btn btn-danger btn-sm" onclick="terminStatusAendern('${t.id}','abgesagt')">Absagen</button>`}
+                  : `<button class="btn btn-ghost btn-sm" onclick="terminStatusAendern('${t.id}','abgesagt')">Absagen</button>`}
+                <button class="btn btn-danger btn-sm" onclick="loescheTermin('${t.id}')">Löschen</button>
               </td>
             </tr>
           `).join('')}
         </tbody>
       </table>
     </div>`;
+}
+
+async function loescheTermin(id) {
+  const termin = _termine.find(t => t.id === id);
+  if (!termin) return;
+  const warnMsg = termin.buchungen_count > 0
+    ? `Dieser Termin hat ${termin.buchungen_count} Buchung(en).\nAlle Buchungen werden ebenfalls gelöscht.\n\nWirklich löschen?`
+    : 'Termin wirklich löschen?';
+  if (!confirm(warnMsg)) return;
+  if (termin.buchungen_count > 0) {
+    await sb.from('buchungen').delete().eq('termin_id', id);
+  }
+  await sb.from('kurs_termine').delete().eq('id', id);
+  await ladeTermine();
 }
 
 async function terminStatusAendern(id, neuerStatus) {
@@ -1146,7 +1161,8 @@ function renderBuchungen() {
               ${b.status === 'neu'
                 ? `<button class="btn btn-success btn-sm" onclick="buchungStatus('${b.id}','bestaetigt')">Bestätigen</button>` : ''}
               ${b.status !== 'storniert'
-                ? `<button class="btn btn-danger btn-sm" onclick="buchungStatus('${b.id}','storniert')">Stornieren</button>` : ''}
+                ? `<button class="btn btn-ghost btn-sm" onclick="buchungStatus('${b.id}','storniert')">Stornieren</button>` : ''}
+              <button class="btn btn-danger btn-sm" onclick="loescheBuchung('${b.id}','${b.termin_id}')">Löschen</button>
             </td>
           </tr>
         `).join('')}
@@ -1157,6 +1173,24 @@ function renderBuchungen() {
 async function buchungStatus(id, status) {
   await sb.from('buchungen').update({ status }).eq('id', id);
   await ladeBuchungen();
+}
+
+async function loescheBuchung(id, terminId) {
+  if (!confirm('Buchung wirklich löschen?')) return;
+  await sb.from('buchungen').delete().eq('id', id);
+  // Buchungszähler am Termin dekrementieren und Status ggf. zurücksetzen
+  if (terminId) {
+    const { data: t } = await sb.from('kurs_termine')
+      .select('buchungen_count, max_teilnehmer').eq('id', terminId).single();
+    if (t) {
+      const neuerCount = Math.max(0, t.buchungen_count - 1);
+      await sb.from('kurs_termine').update({
+        buchungen_count: neuerCount,
+        status: neuerCount < t.max_teilnehmer ? 'offen' : 'voll'
+      }).eq('id', terminId);
+    }
+  }
+  await Promise.all([ladeBuchungen(), ladeTermine()]);
 }
 
 // ── KURSTYPEN ────────────────────────────────────────────
