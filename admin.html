@@ -599,7 +599,7 @@ function zeigeAdmin() {
 // ── DATEN LADEN ──────────────────────────────────────────
 
 async function ladeAlles() {
-  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen(), ladeVerleihBuchungen(), ladeTexte()]);
+  await Promise.all([ladeKurstypen(), ladeTermine(), ladeBuchungen(), ladeVerleihBuchungen(), ladeTexte(), ladeFotos()]);
 }
 
 async function ladeKurstypen() {
