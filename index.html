@@ -6,7 +6,7 @@
 <title>Elimente – Keramik · Kurse · Verleih</title>
 <meta name="description" content="Elimente – Handgemachte Keramik, Töpferkurse und Töpferscheiben-Verleih">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Assistant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Lokale Keys für Tests (wird nicht ins Repo committed, siehe .gitignore) -->
 <script src="config.local.js" onerror="/* kein config.local.js vorhanden – ok auf dem Server */"></script>
@@ -21,31 +21,45 @@
 
 :root {
   /* Hauptfarben – hier anpassen! */
-  --sage: #7A8E6E;
-  --sage-light: #95A888;
-  --sage-pale: #B5C4AB;
-  --sage-muted: #C8D4BF;
-  --cream: #F6F2EC;
-  --cream-warm: #EDE7DD;
-  --cream-dark: #DDD5C8;
-  --linen: #FAF8F5;
-  --bark: #3E3832;
-  --bark-light: #5D554E;
-  --bark-muted: #7A726B;
-  --terracotta: #B87A5A;
-  --terracotta-light: #D4A07C;
-  --moss: #5C6E52;
+  --sage: #77877c;
+  --sage-light: #8fa096;
+  --sage-pale: #b2c0b8;
+  --sage-muted: #d0dad5;
+  --cream: #f2f2f2;
+  --cream-warm: #e8e8e8;
+  --cream-dark: #d8d8d8;
+  --linen: #ffffff;
+  --bark: #282828;
+  --bark-light: #444444;
+  --bark-muted: #666666;
+  --terracotta: #685031;
+  --terracotta-light: #79ab9f;
+  --moss: #4a6b5e;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Karla', sans-serif;
+  font-family: 'Assistant', sans-serif;
   background: var(--linen);
   color: var(--bark);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  font-size: 17px;
+}
+
+/* ─── INFO BAR (oben) ─── */
+.info-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1001;
+  background: #282828;
+  color: rgba(255,255,255,0.8);
+  text-align: center;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  padding: 0.55rem 1rem;
+  height: 32px;
+  display: flex; align-items: center; justify-content: center;
 }
 
 ::selection {
@@ -64,32 +78,34 @@ body::before {
 
 /* ─── TYPOGRAPHY ─── */
 h1, h2, h3, h4 {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: 'Bodoni Moda', serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 /* ─── NAV ─── */
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  position: fixed; top: 32px; left: 0; right: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: space-between;
   padding: 1.1rem 5vw;
-  background: rgba(246,242,236,0.88);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid transparent;
   transition: all 0.4s ease;
 }
 nav.scrolled {
   padding: 0.8rem 5vw;
-  box-shadow: 0 1px 0 rgba(122,142,110,0.12);
+  border-bottom-color: var(--cream-dark);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.06);
 }
 
 .logo {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.7rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--bark);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: lowercase;
 }
 .logo-dot {
@@ -157,7 +173,7 @@ nav.scrolled {
 }
 
 .hero-text {
-  padding-top: 5rem;
+  padding-top: 7rem;
   max-width: 560px;
   animation: slideUp 0.9s ease-out;
 }
@@ -201,34 +217,35 @@ nav.scrolled {
 
 .btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.85rem 1.8rem;
-  font-family: 'Karla', sans-serif;
-  font-size: 0.88rem; font-weight: 600;
-  letter-spacing: 0.04em;
+  padding: 0.8rem 2rem;
+  font-family: 'Assistant', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-decoration: none;
   border: none; cursor: pointer;
-  transition: all 0.35s ease;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
 }
 .btn-primary {
   background: var(--sage);
   color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px rgba(122,142,110,0.25);
+  box-shadow: 6px 6px 9px rgba(0,0,0,0.15);
 }
 .btn-primary:hover {
-  background: var(--moss);
-  box-shadow: 0 4px 20px rgba(122,142,110,0.35);
+  background: #282828;
+  box-shadow: 6px 6px 9px rgba(0,0,0,0.22);
   transform: translateY(-1px);
 }
 .btn-ghost {
   background: none;
-  color: var(--bark-light);
-  padding: 0.85rem 0.5rem;
-  border-bottom: 1.5px solid var(--cream-dark);
+  color: var(--bark);
+  border: 1.5px solid var(--cream-dark);
+  padding: 0.78rem 2rem;
 }
 .btn-ghost:hover {
+  border-color: var(--sage);
   color: var(--sage);
-  border-color: var(--sage-pale);
 }
 
 /* Hero visual */
@@ -326,7 +343,21 @@ section {
   font-size: clamp(2rem, 3.5vw, 2.8rem);
   line-height: 1.15;
   color: var(--bark);
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Trennlinie unter Section-Titeln (wie auf der Referenzseite) */
+.section-intro h2::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 2px;
+  background: var(--sage);
+  margin: 0.7rem 0 1rem;
+}
+.section-intro.centered h2::after {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .section-intro p {
@@ -338,6 +369,10 @@ section {
 /* ─── ÜBER UNS ─── */
 #ueber {
   background: var(--cream);
+}
+
+.about-text blockquote {
+  font-family: 'Bodoni Moda', serif;
 }
 
 .about-grid {
@@ -363,7 +398,7 @@ section {
 }
 
 .about-text blockquote {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.5rem;
   font-style: italic;
   line-height: 1.5;
@@ -392,27 +427,18 @@ section {
 }
 
 .offer-card {
-  background: var(--cream);
-  border: 1px solid rgba(122,142,110,0.08);
-  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
   padding: 2.5rem 2rem;
   position: relative;
-  transition: all 0.4s ease;
+  transition: all 0.35s ease;
   overflow: hidden;
 }
-.offer-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--sage-pale), var(--sage));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s ease;
-}
-.offer-card:hover::before { transform: scaleX(1); }
 .offer-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(62,56,50,0.07);
+  border-color: var(--terracotta-light);
+  box-shadow: 6px 6px 9px rgba(0,0,0,0.1);
 }
 
 .offer-emoji {
@@ -459,15 +485,16 @@ section {
 }
 
 .kurs-item {
-  background: var(--linen);
-  border-radius: 10px;
+  background: #fff;
+  border-radius: 4px;
   padding: 2rem;
-  border: 1px solid transparent;
+  border: 1px solid #eaeaea;
   transition: all 0.35s ease;
 }
 .kurs-item:hover {
-  border-color: var(--sage-pale);
-  box-shadow: 0 8px 28px rgba(62,56,50,0.06);
+  border-color: var(--terracotta-light);
+  box-shadow: 6px 6px 9px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
 }
 
 .kurs-tags {
@@ -619,7 +646,7 @@ section {
   display: flex; flex-direction: column;
 }
 .rental-price-item .amount {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--moss);
@@ -696,7 +723,7 @@ section {
   padding: 0.85rem 1.1rem;
   border: 1.5px solid var(--cream-dark);
   border-radius: 6px;
-  font-family: 'Karla', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 0.9rem;
   background: var(--cream);
   color: var(--bark);
@@ -720,7 +747,7 @@ textarea.form-field { resize: vertical; min-height: 130px; }
   padding: 2.5rem;
 }
 .kal-wrapper-titel {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.8rem;
   color: var(--bark);
   margin-bottom: 0.4rem;
@@ -761,7 +788,7 @@ textarea.form-field { resize: vertical; min-height: 130px; }
   color: var(--sage);
 }
 .kal-monatstitel {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--bark);
@@ -868,7 +895,7 @@ textarea.form-field { resize: vertical; min-height: 130px; }
 .kal-platzhalter p { font-size: 0.88rem; line-height: 1.65; max-width: 220px; }
 
 .kal-panel-datum {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--bark);
@@ -887,7 +914,7 @@ textarea.form-field { resize: vertical; min-height: 130px; }
 .kal-termin-karte:hover { border-color: var(--sage-pale); background: var(--linen); }
 .kal-termin-karte.ist-aktiv { border-color: var(--sage); background: rgba(122,142,110,0.06); }
 .kal-termin-name {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.05rem;
   font-weight: 600;
   color: var(--bark);
@@ -910,7 +937,7 @@ textarea.form-field { resize: vertical; min-height: 130px; }
   gap: 0.65rem;
 }
 .kal-buchform-titel {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bodoni Moda', serif;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--bark);
@@ -956,22 +983,24 @@ textarea.form-field { resize: vertical; min-height: 130px; }
 /* ─── FOOTER ─── */
 footer {
   padding: 2.5rem 5vw;
-  border-top: 1px solid var(--cream-dark);
+  background: var(--sage);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.8rem;
-  color: var(--bark-muted);
+  color: rgba(255,255,255,0.75);
   flex-wrap: wrap;
   gap: 1rem;
 }
+footer .logo { color: #fff; }
+footer .logo-dot { background: rgba(255,255,255,0.6); }
 footer a {
-  color: var(--sage);
+  color: rgba(255,255,255,0.75);
   text-decoration: none;
   margin-left: 1.5rem;
   transition: color 0.3s;
 }
-footer a:hover { color: var(--moss); }
+footer a:hover { color: #fff; }
 
 /* ─── ANIMATIONS ─── */
 @keyframes slideUp {
@@ -1167,6 +1196,9 @@ function renderSite(data) {
   const app = document.getElementById('app');
 
   app.innerHTML = `
+  <!-- INFO BAR -->
+  <div class="info-bar">Handgemachte Keramik aus unserer Werkstatt · Kurse · Verleih</div>
+
   <!-- NAV -->
   <nav id="mainNav">
     <div class="logo">${d.name}<span class="logo-dot"></span></div>
