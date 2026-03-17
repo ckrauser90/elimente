@@ -517,8 +517,11 @@ tr:hover td { background: var(--cream); }
           <input class="form-field" id="kt-dauer" type="text" placeholder="z.B. 3 Stunden">
         </div>
         <div>
-          <label class="form-label">Max. Teilnehmer</label>
-          <input class="form-field" id="kt-max" type="number" min="1" max="30" value="8">
+          <label class="form-label">Personen</label>
+          <select class="form-field" id="kt-max">
+            <option value="1">1 Person</option>
+            <option value="2" selected>2 Personen</option>
+          </select>
         </div>
       </div>
       <div>
@@ -1171,13 +1174,13 @@ function renderKurstypen() {
         <span class="badge badge-${k.aktiv ? 'offen' : 'abgesagt'}">${k.aktiv ? 'Aktiv' : 'Inaktiv'}</span>
       </div>
       <div class="karte-meta">
-        ${k.level} &nbsp;·&nbsp; ${k.duration || '–'} &nbsp;·&nbsp; ${k.price}<br>
-        Max. ${k.max_teilnehmer} Teilnehmer
+        ${k.level} &nbsp;·&nbsp; ${k.duration || '–'} &nbsp;·&nbsp; ${k.price}
         ${k.description ? `<br><span style="margin-top:0.3rem;display:block">${k.description}</span>` : ''}
       </div>
       <div class="karte-aktionen">
         <button class="btn btn-ghost btn-sm" onclick="bearbeiteKurstyp('${k.id}')">Bearbeiten</button>
         <button class="btn btn-ghost btn-sm" onclick="kurstypAktivToggle('${k.id}', ${k.aktiv})">${k.aktiv ? 'Deaktivieren' : 'Aktivieren'}</button>
+        <button class="btn btn-danger btn-sm" onclick="loescheKurstyp('${k.id}')">Löschen</button>
       </div>
     </div>
   `).join('');
@@ -1200,7 +1203,7 @@ function oeffneKurstypModal(typ = null) {
     document.getElementById('kt-level').value = 'Anfänger';
     document.getElementById('kt-preis').value = '';
     document.getElementById('kt-dauer').value = '';
-    document.getElementById('kt-max').value   = '8';
+    document.getElementById('kt-max').value   = '2';
     document.getElementById('kt-beschr').value = '';
   }
   document.getElementById('kurstypFehler').textContent = '';
@@ -1241,6 +1244,27 @@ async function speichereKurstyp() {
 
 async function kurstypAktivToggle(id, aktuellerWert) {
   await sb.from('kurs_typen').update({ aktiv: !aktuellerWert }).eq('id', id);
+  await ladeKurstypen();
+}
+
+async function loescheKurstyp(id) {
+  const { data: termine } = await sb.from('kurs_termine')
+    .select('id, buchungen_count').eq('kurs_typ_id', id);
+
+  if (termine && termine.length > 0) {
+    const totalBuchungen = termine.reduce((s, t) => s + (t.buchungen_count || 0), 0);
+    const warnMsg = totalBuchungen > 0
+      ? `⚠️ Achtung!\n\nDieser Kurstyp hat noch ${termine.length} Termin(e) mit insgesamt ${totalBuchungen} Buchung(en).\n\nAlle Termine und Buchungen werden unwiderruflich gelöscht!\n\nWirklich löschen?`
+      : `Dieser Kurstyp hat noch ${termine.length} Termin(e).\nDiese werden ebenfalls gelöscht.\n\nWirklich löschen?`;
+    if (!confirm(warnMsg)) return;
+    // Buchungen zuerst löschen (FK RESTRICT), dann Termine
+    const terminIds = termine.map(t => t.id);
+    await sb.from('buchungen').delete().in('termin_id', terminIds);
+    await sb.from('kurs_termine').delete().eq('kurs_typ_id', id);
+  } else {
+    if (!confirm('Kurstyp wirklich löschen?')) return;
+  }
+  await sb.from('kurs_typen').delete().eq('id', id);
   await ladeKurstypen();
 }
 

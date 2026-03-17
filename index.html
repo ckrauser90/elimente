@@ -509,6 +509,41 @@ section {
   font-weight: 400;
   color: var(--bark-muted);
 }
+.kurs-item-klickbar {
+  cursor: pointer;
+}
+.kurs-item-klickbar:hover {
+  border-color: var(--sage) !important;
+  transform: translateY(-2px);
+}
+.kurs-cta-link {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--sage);
+  font-weight: 600;
+}
+.kal-filter-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(122,142,110,0.12);
+  border: 1px solid var(--sage-pale);
+  border-radius: 20px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.82rem;
+  color: var(--moss);
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+.kal-filter-badge button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--bark-muted);
+  line-height: 1;
+  padding: 0 0.1rem;
+}
 
 /* ─── GALERIE ─── */
 #galerie { background: var(--linen); }
@@ -1342,17 +1377,30 @@ function renderSite(data) {
       <p>Kleine Gruppen, persönliche Betreuung und jede Menge Spaß mit Ton.</p>
     </div>
     <div class="kurs-list">
-      ${d.kurse.map(k => `
-        <div class="kurs-item reveal">
-          <div class="kurs-tags">
-            <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : 'tag-level'}">${k.level}</span>
-            <span class="tag tag-date">📅 ${k.schedule}</span>
+      ${_kurstypen.length > 0
+        ? _kurstypen.map(k => `
+          <div class="kurs-item kurs-item-klickbar reveal" onclick="zeigeKursImKalender('${k.id}')">
+            <div class="kurs-tags">
+              <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : 'tag-level'}">${k.level}</span>
+            </div>
+            <h3>${k.name}</h3>
+            ${k.description ? `<p>${k.description}</p>` : ''}
+            <div class="kurs-price">${k.price}${k.duration ? ` <small>/ ${k.duration}</small>` : ''}</div>
+            <div class="kurs-cta-link">Termin buchen →</div>
           </div>
-          <h3>${k.name}</h3>
-          <p>${k.description}</p>
-          <div class="kurs-price">${k.price} <small>/ ${k.duration}</small></div>
-        </div>
-      `).join('')}
+        `).join('')
+        : d.kurse.map(k => `
+          <div class="kurs-item reveal">
+            <div class="kurs-tags">
+              <span class="tag ${k.level === 'Fortgeschritten' ? 'tag-advanced' : 'tag-level'}">${k.level}</span>
+              <span class="tag tag-date">📅 ${k.schedule}</span>
+            </div>
+            <h3>${k.name}</h3>
+            <p>${k.description}</p>
+            <div class="kurs-price">${k.price} <small>/ ${k.duration}</small></div>
+          </div>
+        `).join('')
+      }
     </div>
   </section>
 
@@ -1511,6 +1559,8 @@ function initScrollEffects() {
 let _sb              = null;
 let _modus           = 'kurse';
 let _bilder          = { hero: null, about: null, galerie: [] };
+let _kurstypen       = [];
+let _filterKurstyp   = null; // null = alle, oder kurstyp-ID
 let _termine         = [];
 let _verleihBuchungen= [];
 let _selDatum        = null;
@@ -1525,7 +1575,7 @@ let _kalMonat        = new Date(); _kalMonat.setDate(1);
   const cfg = siteData.supabase;
   if (cfg && cfg.url && !cfg.url.startsWith('DEINE')) {
     _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
-    await Promise.all([ladeSiteTexte(), ladeBilder()]); // Texte & Fotos zuerst laden
+    await Promise.all([ladeSiteTexte(), ladeBilder(), ladeAktiveKurstypen()]); // Texte, Fotos & Kurstypen laden
   }
 
   renderSite(siteData); // Mit ggf. aktualisierten Texten rendern
@@ -1574,6 +1624,11 @@ async function ladeUndRenderKalender() {
   renderKalender();
 }
 
+async function ladeAktiveKurstypen() {
+  const { data } = await _sb.from('kurs_typen').select('*').eq('aktiv', true).order('sort_order');
+  _kurstypen = data || [];
+}
+
 async function ladeKursTermine() {
   const heute = new Date().toISOString().split('T')[0];
   const { data, error } = await _sb
@@ -1613,9 +1668,12 @@ function renderKalender() {
   const tageImMonat = new Date(year, month + 1, 0).getDate();
   const heute = new Date(); heute.setHours(0, 0, 0, 0);
 
-  // Termine nach Tag gruppieren
+  // Termine nach Tag gruppieren (ggf. nach Kurstyp filtern)
   const tagMap = {};
-  _termine.forEach(t => {
+  const termineGefiltert = _filterKurstyp
+    ? _termine.filter(t => t.kurs_typen?.id === _filterKurstyp)
+    : _termine;
+  termineGefiltert.forEach(t => {
     const [ty, tm, td] = t.datum.split('-').map(Number);
     if (ty === year && tm - 1 === month) {
       (tagMap[td] = tagMap[td] || []).push(t);
@@ -1689,9 +1747,17 @@ function renderKalender() {
     ? (_selDatum ? kalBuchungsPanel() : kalPlatzhalter())
     : verleihPanel();
 
+  const filterBadge = _filterKurstyp
+    ? (() => {
+        const kt = _kurstypen.find(k => k.id === _filterKurstyp);
+        return kt ? `<div class="kal-filter-badge">${kt.name} <button onclick="clearKursFilter()" title="Filter aufheben">×</button></div>` : '';
+      })()
+    : '';
+
   el.innerHTML = `
     <div class="kal-layout">
       <div>
+        ${filterBadge}
         <div class="kal-nav">
           <button class="kal-nav-btn" onclick="kalNavMonat(-1)">◀</button>
           <span class="kal-monatstitel">${MONATE[month]} ${year}</span>
@@ -1751,7 +1817,6 @@ function kalBuchungsPanel() {
              onclick="kalWaehleTermin('${t.id}')">
           <div class="kal-termin-name">${t.kurs_typen.name}</div>
           <div class="kal-termin-meta">🕐 ${t.uhrzeit_start.slice(0, 5)} Uhr &nbsp;·&nbsp; ⏱ ${t.kurs_typen.duration} &nbsp;·&nbsp; 💰 ${t.kurs_typen.price}</div>
-          <div class="kal-termin-plaetze">${t.max_teilnehmer - t.buchungen_count} / ${t.max_teilnehmer} Plätze frei</div>
         </div>
       `).join('')}
       ${_selTermin && termine.find(t => t.id === _selTermin.id)
@@ -1781,6 +1846,7 @@ function kalBuchungsFormular() {
 
 function setModus(modus) {
   _modus = modus;
+  _filterKurstyp = null;
   _selDatum = null; _selTermin = null;
   _verleihStart = null; _verleihEnde = null;
 
@@ -1793,6 +1859,33 @@ function setModus(modus) {
     ? 'Wähle einen grün markierten Tag im Kalender'
     : 'Wähle Start- und Enddatum der Miete (mind. 2 Wochen)';
 
+  renderKalender();
+}
+
+// Vom Kurs-Klick auf der Homepage: Kalender mit diesem Kurstyp vorfiltern
+function zeigeKursImKalender(kurstypId) {
+  _filterKurstyp = kurstypId;
+  _modus = 'kurse';
+  _selDatum = null; _selTermin = null;
+
+  // Nächsten freien Termin für diesen Kurstyp finden
+  const naechster = _termine.find(t => t.kurs_typen?.id === kurstypId && t.status === 'offen');
+  if (naechster) {
+    const [year, month] = naechster.datum.split('-').map(Number);
+    _kalMonat = new Date(year, month - 1, 1);
+    _selDatum = naechster.datum;
+    _selTermin = naechster;
+  }
+
+  document.querySelectorAll('.kal-toggle-btn').forEach(b => b.classList.remove('aktiv'));
+  document.getElementById('toggle-kurse')?.classList.add('aktiv');
+  document.querySelector('.kal-wrapper')?.scrollIntoView({ behavior: 'smooth' });
+  renderKalender();
+}
+
+function clearKursFilter() {
+  _filterKurstyp = null;
+  _selDatum = null; _selTermin = null;
   renderKalender();
 }
 
