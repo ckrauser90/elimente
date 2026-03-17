@@ -1418,9 +1418,10 @@ const siteData = {
     email: "hallo@elemente-keramik.de",
     telefon: "0123 – 456 789 0",
     instagram: "@elemente.keramik",
-    // Formspree-ID: Account auf formspree.io anlegen, Formular-ID hier eintragen
-    // Beispiel: "xpwzabcd" (aus formspree.io/f/xpwzabcd)
-    formspreeId: "" // ← HIER DIE FORMSPREE-ID EINTRAGEN
+    // Formcarry-ID: Kostenlosen Account auf formcarry.com anlegen,
+    // Formular erstellen, und die ID aus der URL hier eintragen.
+    // Beispiel: "AbCdEfGh" (aus formcarry.com/s/AbCdEfGh)
+    formcarryId: "" // ← HIER DIE FORMCARRY-ID EINTRAGEN
   },
 
   // ── Footer ──
@@ -1662,10 +1663,10 @@ function renderSite(data) {
           <div><div class="label">Instagram</div><div class="value">${d.kontakt.instagram}</div></div>
         </div>
       </div>
-      <!-- Kontaktformular via Formspree
-           EINRICHTEN: Kostenloser Account auf formspree.io erstellen,
-           Formular anlegen, und die Formular-ID unten im siteData-Objekt eintragen.
-           Beispiel: formspreeId: "xpwzabcd" (aus der URL formspree.io/f/xpwzabcd) -->
+      <!-- Kontaktformular via Formcarry (EU-Server, DSGVO-konform)
+           EINRICHTEN: Kostenlosen Account auf formcarry.com erstellen,
+           Formular anlegen, und die ID unten im siteData-Objekt eintragen.
+           Beispiel: formcarryId: "AbCdEfGh" (aus formcarry.com/s/AbCdEfGh) -->
       <form class="form-stack" id="kontakt-formular" onsubmit="kontaktAbsenden(event)">
         <input class="form-field" type="text"  name="name"    placeholder="Dein Name"                          required>
         <input class="form-field" type="email" name="email"   placeholder="Deine E-Mail-Adresse"               required>
@@ -2246,28 +2247,28 @@ async function kalBuchungSenden(e) {
 async function kontaktAbsenden(event) {
   event.preventDefault();
 
-  const formspreeId = siteData.kontakt.formspreeId;
+  const formcarryId = siteData.kontakt.formcarryId;
   const meldung = document.getElementById('kontakt-meldung');
   const btn = document.getElementById('kontakt-btn');
   const form = document.getElementById('kontakt-formular');
 
-  // Noch keine Formspree-ID? Hinweis anzeigen.
-  if (!formspreeId) {
+  // Noch keine Formcarry-ID? Hinweis anzeigen.
+  if (!formcarryId) {
     meldung.style.display = 'block';
     meldung.style.background = '#fff8e1';
     meldung.style.color = '#92400e';
     meldung.style.border = '1px solid #f59e0b';
-    meldung.innerHTML = '⚠️ Das Kontaktformular ist noch nicht eingerichtet. Bitte eine Formspree-ID in <code>siteData.kontakt.formspreeId</code> eintragen.';
+    meldung.innerHTML = '⚠️ Das Kontaktformular ist noch nicht eingerichtet. Bitte eine Formcarry-ID in <code>siteData.kontakt.formcarryId</code> eintragen.';
     return;
   }
 
-  // Absenden
+  // Absenden an Formcarry (EU-Server, DSGVO-konform)
   btn.disabled = true;
   btn.textContent = 'Wird gesendet …';
 
   const daten = new FormData(form);
   try {
-    const antwort = await fetch('https://formspree.io/f/' + formspreeId, {
+    const antwort = await fetch('https://formcarry.com/s/' + formcarryId, {
       method: 'POST',
       body: daten,
       headers: { 'Accept': 'application/json' }
