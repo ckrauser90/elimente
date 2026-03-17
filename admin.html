@@ -387,12 +387,12 @@ tr:hover td { background: var(--cream); }
   </header>
 
   <div class="nav-tabs">
-    <button class="tab-btn aktiv" onclick="zeigeTab('termine')">📅 Termine</button>
-    <button class="tab-btn"       onclick="zeigeTab('buchungen')">📋 Buchungen</button>
-    <button class="tab-btn"       onclick="zeigeTab('fotos')">🖼 Fotos</button>
-    <button class="tab-btn"       onclick="zeigeTab('texte')">✏️ Texte</button>
-    <button class="tab-btn"       onclick="zeigeTab('verleih')">🔄 Verleih</button>
-    <button class="tab-btn"       onclick="zeigeTab('kurstypen')">🎨 Kurstypen</button>
+    <button class="tab-btn aktiv" onclick="zeigeTab('termine', event)">📅 Termine</button>
+    <button class="tab-btn"       onclick="zeigeTab('buchungen', event)">📋 Buchungen</button>
+    <button class="tab-btn"       onclick="zeigeTab('fotos', event)">🖼 Fotos</button>
+    <button class="tab-btn"       onclick="zeigeTab('texte', event)">✏️ Texte</button>
+    <button class="tab-btn"       onclick="zeigeTab('verleih', event)">🔄 Verleih</button>
+    <button class="tab-btn"       onclick="zeigeTab('kurstypen', event)">🎨 Kurstypen</button>
   </div>
 
   <!-- TAB: TERMINE -->
@@ -671,11 +671,11 @@ async function ladeBuchungen() {
 
 // ── TAB-NAVIGATION ───────────────────────────────────────
 
-function zeigeTab(name) {
+function zeigeTab(name, evt) {
   document.querySelectorAll('.tab-inhalt').forEach(el => el.classList.remove('aktiv'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('aktiv'));
   document.getElementById('tab-' + name).classList.add('aktiv');
-  event.target.classList.add('aktiv');
+  if (evt && evt.currentTarget) evt.currentTarget.classList.add('aktiv');
 }
 
 // ── TERMINE ──────────────────────────────────────────────

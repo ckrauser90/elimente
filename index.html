@@ -2189,11 +2189,12 @@ async function verleihBuchungSenden(e) {
   } else {
     const name  = document.getElementById('vb-name').value.trim();
     const email = document.getElementById('vb-email').value.trim();
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     document.getElementById('kal-panel').innerHTML = `
       <div class="kal-erfolg">
         <div class="kal-erfolg-haken">✓</div>
         <h3>Anfrage eingegangen!</h3>
-        <p>Danke, <strong>${name}</strong>! Ich melde mich per E-Mail an <strong>${email}</strong>.</p>
+        <p>Danke, <strong>${esc(name)}</strong>! Ich melde mich per E-Mail an <strong>${esc(email)}</strong>.</p>
         <button class="btn btn-ghost" onclick="_verleihStart=null;_verleihEnde=null;ladeUndRenderKalender()"
                 style="margin-top:1.2rem">Neue Anfrage stellen</button>
       </div>`;
@@ -2235,12 +2236,14 @@ async function kalBuchungSenden(e) {
     const datumStr = new Date(_selDatum + 'T00:00:00')
       .toLocaleDateString('de-DE', { day: 'numeric', month: 'long' });
 
+    // Escaping zur XSS-Prävention (name/email kommen aus User-Input)
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     document.getElementById('kal-panel').innerHTML = `
       <div class="kal-erfolg">
         <div class="kal-erfolg-haken">✓</div>
         <h3>Buchung eingegangen!</h3>
-        <p>Danke, <strong>${name}</strong>! Deine Anfrage für den <strong>${datumStr}</strong> ist eingegangen.</p>
-        <p>Ich melde mich per E-Mail an <strong>${email}</strong>.</p>
+        <p>Danke, <strong>${esc(name)}</strong>! Deine Anfrage für den <strong>${datumStr}</strong> ist eingegangen.</p>
+        <p>Ich melde mich per E-Mail an <strong>${esc(email)}</strong>.</p>
         <button class="btn btn-ghost" onclick="_selDatum=null;_selTermin=null;ladeUndRenderKalender()"
                 style="margin-top:1.2rem">Weiteren Termin buchen</button>
       </div>`;
@@ -2257,7 +2260,7 @@ async function kalBuchungSenden(e) {
 async function kontaktAbsenden(event) {
   event.preventDefault();
 
-  const formcarryId = siteData.kontakt.formcarryId;
+  const formcarryId = (siteData.kontakt.formcarryId || '').trim();
   const meldung = document.getElementById('kontakt-meldung');
   const btn = document.getElementById('kontakt-btn');
   const form = document.getElementById('kontakt-formular');
@@ -2284,7 +2287,10 @@ async function kontaktAbsenden(event) {
       headers: { 'Accept': 'application/json' }
     });
 
-    if (antwort.ok) {
+    const json = await antwort.json().catch(() => ({}));
+    console.log('[Formcarry] Status:', antwort.status, 'Response:', json);
+
+    if (antwort.ok && json.code !== 400) {
       meldung.style.display = 'block';
       meldung.style.background = '#f0fdf4';
       meldung.style.color = '#166534';
@@ -2292,14 +2298,16 @@ async function kontaktAbsenden(event) {
       meldung.textContent = '✓ Danke für deine Nachricht! Ich melde mich so schnell wie möglich.';
       form.reset();
     } else {
-      throw new Error('Serverfehler');
+      const fehlerText = json.message || json.title || ('HTTP ' + antwort.status);
+      throw new Error(fehlerText);
     }
   } catch (e) {
+    console.error('[Formcarry] Fehler:', e.message);
     meldung.style.display = 'block';
     meldung.style.background = '#fef2f2';
     meldung.style.color = '#991b1b';
     meldung.style.border = '1px solid #fca5a5';
-    meldung.textContent = '✗ Es ist ein Fehler aufgetreten. Bitte sende deine Nachricht direkt per E-Mail.';
+    meldung.textContent = '✗ Fehler: ' + e.message + ' — Bitte sende deine Nachricht direkt per E-Mail.';
   }
 
   btn.disabled = false;
