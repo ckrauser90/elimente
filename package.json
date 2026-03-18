@@ -1,0 +1,13 @@
+{
+  "name": "elimente",
+  "version": "1.0.0",
+  "description": "Elimente – Töpferei Website E2E Tests",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}
