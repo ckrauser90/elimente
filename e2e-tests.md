@@ -186,8 +186,12 @@ Da die Website aktuell keine automatisierten E2E-Tests besitzt, listet dieses Do
 | 11.12 | Ausstehende Buchung akzeptieren | Buchung im Status „ausstehend" | Status wechselt auf „bestätigt", Kunde erhält Bestätigungsmail |
 | 11.13 | Buchung stornieren (durch Admin) | Bestätigte Buchung vorhanden | Status wechselt auf „storniert", Zeitraum wird im Kalender wieder freigegeben |
 | 11.14 | Buchung löschen | Buchung vorhanden | Buchung wird vollständig aus der Liste entfernt |
-| 11.15 | Zeitraum manuell sperren | – | Gesperrter Zeitraum im Kalender ausgegraut, nicht buchbar |
-| 11.16 | Zeitraum wieder freigeben | Gesperrter Zeitraum | Zeitraum ist wieder buchbar |
+| 11.15 | Warnung beim Löschen einer aktiven Buchung | Bestätigte Buchung vorhanden | Bestätigungsdialog erscheint mit Hinweis auf bestehende Buchung |
+| 11.16 | Löschen nach Warnung bestätigen | Warndialog offen | Buchung wird gelöscht, Zeitraum im Kalender freigegeben |
+| 11.17 | Löschen nach Warnung abbrechen | Warndialog offen | Buchung bleibt erhalten, keine Änderung |
+| 11.18 | Warnung beim Sperren eines bereits gebuchten Zeitraums | Zeitraum hat aktive Buchung | Hinweis erscheint, dass der Zeitraum eine Buchung enthält |
+| 11.19 | Zeitraum manuell sperren | – | Gesperrter Zeitraum im Kalender ausgegraut, nicht buchbar |
+| 11.20 | Zeitraum wieder freigeben | Gesperrter Zeitraum | Zeitraum ist wieder buchbar |
 
 ### Dashboard – Bilder-Upload
 
