@@ -1,3 +1,8 @@
+# Node / Playwright
+node_modules/
+playwright-report/
+test-results/
+
 # Lokale Konfiguration – NIEMALS ins Repository!
 config.js
 config.local.js
