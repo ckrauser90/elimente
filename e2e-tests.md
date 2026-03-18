@@ -107,7 +107,33 @@ Da die Website aktuell keine automatisierten E2E-Tests besitzt, listet dieses Do
 
 ---
 
-## 9. Kontaktformular
+## 9. Buchungsworkflow (End-to-End)
+
+### 9.1 Buchung über die Website durchführen
+
+| # | Testfall | Vorbedingung | Erwartetes Ergebnis |
+|---|----------|--------------|---------------------|
+| 9.1.1 | Startdatum im Kalender auswählen | Kalender sichtbar, Datum frei | Datum wird markiert |
+| 9.1.2 | Enddatum (min. 14 Tage später) auswählen | Startdatum gesetzt | Zeitraum wird farblich hervorgehoben |
+| 9.1.3 | Buchungsformular erscheint nach Datumsauswahl | Gültiger Zeitraum gewählt | Formular mit Feldern für Name, E-Mail, Telefon sichtbar |
+| 9.1.4 | Pflichtfelder werden validiert | Formular leer abgeschickt | Fehlermeldung bei leeren Pflichtfeldern |
+| 9.1.5 | Buchung erfolgreich absenden | Alle Felder korrekt | Erfolgsmeldung erscheint, Bestätigungsmail an Kunden erwähnt |
+| 9.1.6 | Gebuchter Zeitraum ist sofort ausgegraut | Nach erfolgreicher Buchung | Der gebuchte Zeitraum ist im Kalender nicht mehr auswählbar |
+| 9.1.7 | Doppelbuchung ist nicht möglich | Zeitraum bereits gebucht | Überlappende Datumsauswahl wird blockiert oder zeigt Fehler |
+| 9.1.8 | Teilweise belegter Zeitraum wird korrekt angezeigt | Teil des Kalenders gebucht | Nur freie Tage sind auswählbar |
+
+### 9.2 Buchungsstatus im Kalender (Sichtbarkeit)
+
+| # | Testfall | Vorbedingung | Erwartetes Ergebnis |
+|---|----------|--------------|---------------------|
+| 9.2.1 | Ausstehende Buchung ist ausgegraut | Buchung angelegt, noch nicht bestätigt | Zeitraum im Kalender als belegt/ausgegraut dargestellt |
+| 9.2.2 | Bestätigte Buchung bleibt ausgegraut | Admin hat Buchung akzeptiert | Zeitraum weiterhin nicht buchbar |
+| 9.2.3 | Stornierte Buchung gibt Zeitraum frei | Admin hat Buchung storniert | Zeitraum erscheint wieder als buchbar (nicht ausgegraut) |
+| 9.2.4 | Kalender-Ansicht aktualisiert sich ohne Neuladen | – | Statusänderungen im Admin spiegeln sich zeitnah im Kalender wider |
+
+---
+
+## 10. Kontaktformular
 
 | # | Testfall | Vorbedingung | Erwartetes Ergebnis |
 |---|----------|--------------|---------------------|
@@ -156,9 +182,12 @@ Da die Website aktuell keine automatisierten E2E-Tests besitzt, listet dieses Do
 
 | # | Testfall | Vorbedingung | Erwartetes Ergebnis |
 |---|----------|--------------|---------------------|
-| 11.11 | Buchungsübersicht wird angezeigt | Buchungen vorhanden | Liste aller Buchungen sichtbar |
-| 11.12 | Zeitraum manuell sperren | – | Gesperrter Zeitraum im Kalender ausgegraut |
-| 11.13 | Zeitraum wieder freigeben | Gesperrter Zeitraum | Zeitraum wieder buchbar |
+| 11.11 | Buchungsübersicht wird angezeigt | Buchungen vorhanden | Liste aller Buchungen mit Name, Zeitraum und Status sichtbar |
+| 11.12 | Ausstehende Buchung akzeptieren | Buchung im Status „ausstehend" | Status wechselt auf „bestätigt", Kunde erhält Bestätigungsmail |
+| 11.13 | Buchung stornieren (durch Admin) | Bestätigte Buchung vorhanden | Status wechselt auf „storniert", Zeitraum wird im Kalender wieder freigegeben |
+| 11.14 | Buchung löschen | Buchung vorhanden | Buchung wird vollständig aus der Liste entfernt |
+| 11.15 | Zeitraum manuell sperren | – | Gesperrter Zeitraum im Kalender ausgegraut, nicht buchbar |
+| 11.16 | Zeitraum wieder freigeben | Gesperrter Zeitraum | Zeitraum ist wieder buchbar |
 
 ### Dashboard – Bilder-Upload
 
@@ -170,7 +199,7 @@ Da die Website aktuell keine automatisierten E2E-Tests besitzt, listet dieses Do
 
 ---
 
-## 12. Rechtliche Seiten
+## 13. Rechtliche Seiten
 
 | # | Testfall | Vorbedingung | Erwartetes Ergebnis |
 |---|----------|--------------|---------------------|
@@ -182,7 +211,7 @@ Da die Website aktuell keine automatisierten E2E-Tests besitzt, listet dieses Do
 
 ---
 
-## 13. Responsives Design
+## 14. Responsives Design
 
 | # | Testfall | Viewport | Erwartetes Ergebnis |
 |---|----------|----------|---------------------|
@@ -194,7 +223,7 @@ Da die Website aktuell keine automatisierten E2E-Tests besitzt, listet dieses Do
 
 ---
 
-## 14. Barrierefreiheit & Performance
+## 15. Barrierefreiheit & Performance
 
 | # | Testfall | Erwartetes Ergebnis |
 |---|----------|---------------------|
