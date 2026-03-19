@@ -36,6 +36,36 @@ test.describe('Verleih-Bereich', () => {
 
 });
 
+test.describe('Verleih-Aktivierung', () => {
+
+  test('9.0.1 Verleih inaktiv – Scheibe-leihen-Button ist deaktiviert', async ({ page }) => {
+    await setCookieConsent(page, 'necessary');
+    // LIFO: diese spezifische Route überschreibt den catch-all aus mockSupabase
+    await mockSupabase(page);
+    await page.route('**/rest/v1/site_texte*', async route => {
+      await route.fulfill({ json: [{ key: 'verleih.aktiv', wert: 'false' }] });
+    });
+    await page.goto('/');
+    await navigateToVerleih(page);
+    // Der Verleih-Toggle-Button muss deaktiviert sein
+    const toggleVerleih = page.locator('#toggle-verleih');
+    await expect(toggleVerleih).toHaveCount(0); // button existiert nicht wenn inaktiv
+    const disabledBtn = page.locator('.kal-toggle-btn[disabled]');
+    await expect(disabledBtn).toBeAttached();
+  });
+
+  test('9.0.2 Verleih aktiv – Scheibe-leihen-Button ist klickbar', async ({ page }) => {
+    await setCookieConsent(page, 'necessary');
+    await mockSupabase(page);
+    await page.goto('/');
+    await navigateToVerleih(page);
+    const toggleVerleih = page.locator('#toggle-verleih');
+    await expect(toggleVerleih).toBeAttached();
+    await expect(toggleVerleih).not.toBeDisabled();
+  });
+
+});
+
 test.describe('Buchungsworkflow – Datumsauswahl', () => {
 
   test.beforeEach(async ({ page }) => {
@@ -59,17 +89,17 @@ test.describe('Buchungsworkflow – Datumsauswahl', () => {
     await expect(markiert.first()).toBeAttached();
   });
 
-  test('9.1.2 Zeitraum (min. 14 Tage) führt zur Hervorhebung', async ({ page }) => {
+  test('9.1.2 Zeitraum (min. 1 Monat) führt zur Hervorhebung', async ({ page }) => {
     const toggle = page.locator('#toggle-verleih');
     if (await toggle.count() > 0) await toggle.click();
 
     const freie = page.locator('.kal-cell.kal-verleih-frei, .kal-cell.kal-frei:not(.kal-vergangen)');
     const count = await freie.count();
-    if (count < 16) test.skip();
+    if (count < 32) test.skip();
 
     await freie.nth(0).click();
     await page.waitForTimeout(200);
-    await freie.nth(15).click();
+    await freie.nth(31).click();
     await page.waitForTimeout(300);
     const range = page.locator('.kal-cell.kal-verleih-range, .kal-cell.kal-range, #verleihform');
     await expect(range.first()).toBeAttached();
@@ -81,11 +111,11 @@ test.describe('Buchungsworkflow – Datumsauswahl', () => {
 
     const freie = page.locator('.kal-cell.kal-verleih-frei, .kal-cell.kal-frei:not(.kal-vergangen)');
     const count = await freie.count();
-    if (count < 16) test.skip();
+    if (count < 32) test.skip();
 
     await freie.nth(0).click();
     await page.waitForTimeout(200);
-    await freie.nth(15).click();
+    await freie.nth(31).click();
     await page.waitForTimeout(500);
 
     await expect(page.locator('#verleihform')).toBeVisible({ timeout: 5000 });
@@ -99,11 +129,11 @@ test.describe('Buchungsworkflow – Datumsauswahl', () => {
 
     const freie = page.locator('.kal-cell.kal-verleih-frei, .kal-cell.kal-frei:not(.kal-vergangen)');
     const count = await freie.count();
-    if (count < 16) test.skip();
+    if (count < 32) test.skip();
 
     await freie.nth(0).click();
     await page.waitForTimeout(200);
-    await freie.nth(15).click();
+    await freie.nth(31).click();
     await page.waitForTimeout(500);
 
     await expect(page.locator('#verleihform')).toBeVisible({ timeout: 5000 });
@@ -131,11 +161,11 @@ test.describe('Buchungsworkflow – Datumsauswahl', () => {
 
     const freie = page.locator('.kal-cell.kal-verleih-frei, .kal-cell.kal-frei:not(.kal-vergangen)');
     const count = await freie.count();
-    if (count < 16) test.skip();
+    if (count < 32) test.skip();
 
     await freie.nth(0).click();
     await page.waitForTimeout(200);
-    await freie.nth(15).click();
+    await freie.nth(31).click();
     await page.waitForTimeout(500);
 
     await expect(page.locator('#verleihform')).toBeVisible({ timeout: 5000 });
@@ -147,7 +177,7 @@ test.describe('Buchungsworkflow – Datumsauswahl', () => {
     await expect(page.locator('.kal-erfolg')).toContainText('Anfrage eingegangen');
   });
 
-  test('9.1.8 Mindestmietdauer-Validierung – weniger als 14 Tage zeigt kein Formular', async ({ page }) => {
+  test('9.1.8 Mindestmietdauer-Validierung – weniger als 1 Monat zeigt kein Formular', async ({ page }) => {
     const toggle = page.locator('#toggle-verleih');
     if (await toggle.count() > 0) await toggle.click();
 

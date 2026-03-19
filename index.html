@@ -725,15 +725,22 @@ section {
   border: 1px solid rgba(122,142,110,0.1);
 }
 
+.rental-bild {
+  width: 260px;
+  height: 340px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  align-self: start;
+  box-shadow: 0 8px 28px rgba(62,56,50,0.12);
+}
 .rental-visual {
   width: 150px; height: 150px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--sage-muted), var(--sage));
   display: flex; align-items: center; justify-content: center;
   font-size: 3.5rem;
-  box-shadow:
-    0 12px 32px rgba(122,142,110,0.18),
-    inset 0 -4px 12px rgba(92,110,82,0.15);
+  box-shadow: 0 12px 32px rgba(122,142,110,0.18), inset 0 -4px 12px rgba(92,110,82,0.15);
   flex-shrink: 0;
 }
 
@@ -1366,6 +1373,7 @@ footer a:hover { color: var(--moss); }
   }
   .gallery-cell:nth-child(4) { grid-row: span 1; }
   .rental-card { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .rental-bild { width: 100%; height: 220px; }
   .rental-pricing { justify-content: center; }
   .rental-perks { justify-content: center; }
   .contact-layout { grid-template-columns: 1fr; }
@@ -1639,10 +1647,9 @@ const siteData = {
   verleih: {
     title: "Professionelle Töpferscheibe",
     description: "Meine Scheibe ist ideal für zuhause — kompakt, leise und leistungsstark. Lieferung und Abholung inklusive im näheren Umkreis.",
-    priceDay: "35 €",
-    priceWeek: "120 €",
+    priceMonth: "150 €",
     aktiv: "true", // 'false' = Verleih deaktiviert (per Admin Toggle steuerbar)
-    perks: ["Lieferung & Abholung", "Einweisung inklusive", "Werkzeug-Set dabei", "Ton auf Wunsch"]
+    perks: ["Selbstabholung", "Einweisung inklusive", "Werkzeug-Set dabei", "Ton auf Wunsch"]
   },
 
   // ── Kontaktdaten ──
@@ -1868,18 +1875,16 @@ function renderSite(data) {
       <p>Dein Atelier bei dir zuhause.</p>
     </div>
     <div class="rental-card reveal">
-      <div class="rental-visual">🔄</div>
+      ${_bilder.verleihBild
+        ? `<img src="${esc(_bilder.verleihBild.url)}" alt="${esc(_bilder.verleihBild.alt_text || 'Töpferscheibe leihen')}" class="rental-bild">`
+        : `<div class="rental-visual">🔄</div>`}
       <div class="rental-body">
         <h3>${d.verleih.title}</h3>
         <p>${d.verleih.description}</p>
         <div class="rental-pricing">
           <div class="rental-price-item">
-            <span class="amount">${d.verleih.priceDay}</span>
-            <span class="period">Pro Tag</span>
-          </div>
-          <div class="rental-price-item">
-            <span class="amount">${d.verleih.priceWeek}</span>
-            <span class="period">Pro Woche</span>
+            <span class="amount">${d.verleih.priceMonth}</span>
+            <span class="period">Pro Monat</span>
           </div>
         </div>
         <div class="rental-perks">
@@ -1912,7 +1917,7 @@ function renderSite(data) {
       </div>
       <div class="standort-map">
         <iframe
-          src="https://maps.google.com/maps?q=${encodeURIComponent(d.kontakt.adresse)}&output=embed&z=15"
+          src="https://maps.google.com/maps?q=${encodeURIComponent(d.kontakt.adresse)}&output=embed&z=12"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
           title="Standort ${d.name}">
@@ -2002,7 +2007,7 @@ function initScrollEffects() {
 // Zustand
 let _sb              = null;
 let _modus           = 'kurse';
-let _bilder          = { hero: null, about: null, galerie: [], icons: { kaufen: null, kurse: null, verleih: null } };
+let _bilder          = { hero: null, about: null, galerie: [], verleihBild: null, icons: { kaufen: null, kurse: null, verleih: null } };
 let _kurstypen       = [];
 let _filterKurstyp   = null; // null = alle, oder kurstyp-ID
 let _termine         = [];
@@ -2044,6 +2049,7 @@ async function ladeBilder() {
   _bilder.icons.kaufen     = data.find(b => b.bereich === 'icon_kaufen')  || null;
   _bilder.icons.kurse      = data.find(b => b.bereich === 'icon_kurse')   || null;
   _bilder.icons.verleih    = data.find(b => b.bereich === 'icon_verleih') || null;
+  _bilder.verleihBild      = data.find(b => b.bereich === 'verleih_bild') || null;
 }
 
 // Texte aus Supabase laden und in siteData einsetzen
@@ -2162,9 +2168,9 @@ function renderKalender() {
       const istEnde    = datum === _verleihEnde;
       const istRange   = _verleihStart && _verleihEnde && datum > _verleihStart && datum < _verleihEnde;
 
-      // Zu früh = weniger als 14 Tage nach Start (wenn Start gewählt aber noch kein Ende)
+      // Zu früh = weniger als 1 Kalendermonat nach Start (wenn Start gewählt aber noch kein Ende)
       const minEnde = _verleihStart && !_verleihEnde
-        ? new Date(new Date(_verleihStart + 'T00:00:00').getTime() + 14 * 86400000).toISOString().split('T')[0]
+        ? _einMonatSpäter(_verleihStart)
         : null;
       const istZuFrueh = minEnde && datum > _verleihStart && datum < minEnde;
 
@@ -2338,6 +2344,16 @@ function clearKursFilter() {
   renderKalender();
 }
 
+// Berechnet das Datum genau einen Kalendermonat später (z.B. 5. März → 5. April)
+function _einMonatSpäter(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const neuerMonat = d.getMonth() + 1;
+  const neuesJahr  = neuerMonat > 11 ? d.getFullYear() + 1 : d.getFullYear();
+  const normMonat  = neuerMonat > 11 ? 0 : neuerMonat;
+  const maxTag     = new Date(neuesJahr, normMonat + 1, 0).getDate(); // letzter Tag des Zielmonats
+  return new Date(neuesJahr, normMonat, Math.min(d.getDate(), maxTag)).toISOString().split('T')[0];
+}
+
 // ─── Verleih: Panel-Inhalte ────────────────────────────────
 
 function verleihPanel() {
@@ -2345,13 +2361,13 @@ function verleihPanel() {
     return `<div class="kal-platzhalter">
       <div class="kal-platzhalter-icon">🔄</div>
       <p>Wähle den <strong>ersten Tag</strong> der Miete im Kalender.<br>
-      <small style="font-size:0.78rem">Mindestmietdauer: 2 Wochen</small></p>
+      <small style="font-size:0.78rem">Mindestmietdauer: 1 Monat</small></p>
     </div>`;
   }
 
   const startObj = new Date(_verleihStart + 'T00:00:00');
   const startStr = startObj.toLocaleDateString('de-DE', { day: 'numeric', month: 'long' });
-  const minEndeObj = new Date(startObj.getTime() + 14 * 86400000);
+  const minEndeObj = new Date(_einMonatSpäter(_verleihStart) + 'T00:00:00');
   const minEndeStr = minEndeObj.toLocaleDateString('de-DE', { day: 'numeric', month: 'long' });
 
   if (!_verleihEnde) {
@@ -2369,9 +2385,12 @@ function verleihPanel() {
   const endeObj  = new Date(_verleihEnde + 'T00:00:00');
   const endeStr  = endeObj.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
   const tage     = Math.round((endeObj - startObj) / 86400000);
-  const wochen   = Math.floor(tage / 7);
-  const rest     = tage % 7;
-  const dauerStr = `${wochen} Woche${wochen !== 1 ? 'n' : ''}${rest ? ` ${rest} Tag${rest !== 1 ? 'e' : ''}` : ''}`;
+  const monate   = (endeObj.getFullYear() - startObj.getFullYear()) * 12 + (endeObj.getMonth() - startObj.getMonth());
+  const restTageBase = new Date(startObj.getFullYear(), startObj.getMonth() + monate, startObj.getDate());
+  const restTage = Math.round((endeObj - restTageBase) / 86400000);
+  const dauerStr = monate > 0
+    ? `${monate} Monat${monate !== 1 ? 'e' : ''}${restTage > 0 ? ` ${restTage} Tag${restTage !== 1 ? 'e' : ''}` : ''}`
+    : `${tage} Tag${tage !== 1 ? 'e' : ''}`;
 
   return `<div>
     <div class="kal-panel-datum">Töpferscheibe leihen</div>
@@ -2408,7 +2427,7 @@ function verleihKlick(datum) {
     const tage = Math.round(
       (new Date(datum + 'T00:00:00') - new Date(_verleihStart + 'T00:00:00')) / 86400000
     );
-    if (tage < 14) return; // Zu kurz — visuell schon gesperrt, trotzdem sicher abfangen
+    if (datum < _einMonatSpäter(_verleihStart)) return; // Zu kurz — visuell schon gesperrt, trotzdem sicher abfangen
 
     // Überschneidung prüfen
     const overlap = _verleihBuchungen.some(b =>

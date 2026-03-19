@@ -490,8 +490,11 @@ test.describe('Admin – Responsive Tabs', () => {
     const tabNav = page.locator('.nav-tabs');
     await expect(tabNav).toBeAttached();
 
-    const overflow = await tabNav.evaluate(el => getComputedStyle(el).overflowX);
-    expect(overflow).toBe('auto');
+    const overflowX = await tabNav.evaluate(el => getComputedStyle(el).overflowX);
+    expect(overflowX).toBe('auto');
+    // Kein vertikales Scrollen
+    const overflowY = await tabNav.evaluate(el => getComputedStyle(el).overflowY);
+    expect(overflowY).toBe('hidden');
   });
 
   test('11.24 Alle Tab-Buttons sind ohne Zeilenumbruch dargestellt', async ({ page }) => {
@@ -508,6 +511,36 @@ test.describe('Admin – Responsive Tabs', () => {
       const ws = await buttons.nth(i).evaluate(el => getComputedStyle(el).whiteSpace);
       expect(ws).toBe('nowrap');
     }
+  });
+
+});
+
+test.describe('Admin – Fotos-Tab Verleih-Bild', () => {
+
+  test('11.25 Fotos-Tab enthält Upload-Bereich für Verleih-Foto', async ({ page }) => {
+    await mockAdminDaten(page);
+    await page.goto('/admin.html');
+    await page.waitForSelector('.admin-wrap.aktiv', { timeout: 5000 });
+    await page.locator('.tab-btn', { hasText: 'Fotos' }).click({ force: true });
+    await page.waitForSelector('#fotos-inhalt', { timeout: 3000 });
+    const uploadLabel = page.locator('label[for="upload-verleih_bild"]');
+    await expect(uploadLabel).toBeAttached();
+  });
+
+  test('11.26 Texte-Tab zeigt Monatspreis-Feld (kein Tag/Woche)', async ({ page }) => {
+    await mockAdminDaten(page);
+    await page.goto('/admin.html');
+    await page.waitForSelector('.admin-wrap.aktiv', { timeout: 5000 });
+    await page.locator('.tab-btn', { hasText: 'Texte' }).click({ force: true });
+    await page.waitForSelector('.texte-sektion', { timeout: 3000 });
+    // Monatspreis-Feld muss vorhanden sein
+    const monthLabel = page.locator('.texte-feld-label', { hasText: /Monat/i });
+    await expect(monthLabel.first()).toBeAttached();
+    // Tag- und Wochenpreis dürfen nicht mehr da sein
+    const tagLabel = page.locator('.texte-feld-label', { hasText: /Pro Tag/i });
+    await expect(tagLabel).toHaveCount(0);
+    const wocheLabel = page.locator('.texte-feld-label', { hasText: /Pro Woche/i });
+    await expect(wocheLabel).toHaveCount(0);
   });
 
 });

@@ -98,6 +98,7 @@ header {
   background: var(--cream-warm);
   padding: 0 2rem;
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -861,7 +862,7 @@ async function speichereTermin() {
 
 // ── FOTOS ────────────────────────────────────────────────
 
-let _adminBilder = { hero: null, about: null, galerie: [], icons: { kaufen: null, kurse: null, verleih: null } };
+let _adminBilder = { hero: null, about: null, galerie: [], verleihBild: null, icons: { kaufen: null, kurse: null, verleih: null } };
 
 async function ladeFotos() {
   const { data } = await sb.from('galerie_bilder').select('*').order('sort_order');
@@ -872,6 +873,7 @@ async function ladeFotos() {
     _adminBilder.icons.kaufen  = data.find(b => b.bereich === 'icon_kaufen')  || null;
     _adminBilder.icons.kurse   = data.find(b => b.bereich === 'icon_kurse')   || null;
     _adminBilder.icons.verleih = data.find(b => b.bereich === 'icon_verleih') || null;
+    _adminBilder.verleihBild   = data.find(b => b.bereich === 'verleih_bild') || null;
   }
   renderFotos();
 }
@@ -916,6 +918,25 @@ function renderFotos() {
               <label for="upload-about" class="btn btn-primary btn-sm">📁 Foto hochladen</label>
               ${_adminBilder.about ? `<button class="btn btn-danger btn-sm" onclick="loescheFoto('${_adminBilder.about.id}', '${_adminBilder.about.storage_path || ''}', 'about')">🗑 Löschen</button>` : ''}
               <div class="foto-progress" id="progress-about"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verleih-Foto -->
+      <div class="foto-bereich">
+        <div class="foto-bereich-kopf">Verleih-Foto <small>Erscheint im Töpferscheiben-Verleih-Bereich</small></div>
+        <div class="foto-bereich-inhalt">
+          <div class="foto-einzel">
+            <div class="foto-vorschau" id="vorschau-verleih_bild" style="width:180px;height:220px">
+              ${_adminBilder.verleihBild ? `<img src="${_adminBilder.verleihBild.url}" alt="">` : '🔄'}
+            </div>
+            <div class="foto-aktionen">
+              <input type="file" accept="image/*" id="upload-verleih_bild" class="foto-upload-input"
+                     onchange="uploadFoto('verleih_bild', this)">
+              <label for="upload-verleih_bild" class="btn btn-primary btn-sm">📁 Foto hochladen</label>
+              ${_adminBilder.verleihBild ? `<button class="btn btn-danger btn-sm" onclick="loescheFoto('${_adminBilder.verleihBild.id}', '${_adminBilder.verleihBild.storage_path || ''}', 'verleih_bild')">🗑 Löschen</button>` : ''}
+              <div class="foto-progress" id="progress-verleih_bild"></div>
             </div>
           </div>
         </div>
@@ -995,18 +1016,25 @@ async function uploadFoto(bereich, input) {
   if (file.size > 5 * 1024 * 1024) { alert('Datei zu groß (max. 5 MB).'); return; }
 
   const progressEl = document.getElementById('progress-' + bereich);
-  progressEl.textContent = 'Wird hochgeladen …';
+  if (progressEl) progressEl.textContent = 'Wird hochgeladen …';
 
   const ext      = file.name.split('.').pop();
   const pfad     = `${bereich}/${Date.now()}.${ext}`;
 
   const { error: upErr } = await sb.storage.from('bilder').upload(pfad, file);
-  if (upErr) { progressEl.textContent = 'Upload fehlgeschlagen: ' + upErr.message; return; }
+  if (upErr) { if (progressEl) progressEl.textContent = 'Upload fehlgeschlagen: ' + upErr.message; return; }
 
   const { data: urlData } = sb.storage.from('bilder').getPublicUrl(pfad);
 
-  // Altes Bild löschen falls vorhanden
-  const altes = bereich === 'hero' ? _adminBilder.hero : _adminBilder.about;
+  // Altes Bild löschen falls vorhanden (korrekte Zuordnung je Bereich)
+  const altes = {
+    'hero':        _adminBilder.hero,
+    'about':       _adminBilder.about,
+    'verleih_bild':_adminBilder.verleihBild,
+    'icon_kaufen': _adminBilder.icons.kaufen,
+    'icon_kurse':  _adminBilder.icons.kurse,
+    'icon_verleih':_adminBilder.icons.verleih,
+  }[bereich] || null;
   if (altes) {
     if (altes.storage_path) await sb.storage.from('bilder').remove([altes.storage_path]);
     await sb.from('galerie_bilder').delete().eq('id', altes.id);
@@ -1014,8 +1042,8 @@ async function uploadFoto(bereich, input) {
 
   await sb.from('galerie_bilder').insert({ bereich, url: urlData.publicUrl, storage_path: pfad, sort_order: 0 });
 
-  progressEl.textContent = '✓ Gespeichert';
-  setTimeout(() => { progressEl.textContent = ''; }, 3000);
+  if (progressEl) progressEl.textContent = '✓ Gespeichert';
+  setTimeout(() => { if (progressEl) progressEl.textContent = ''; }, 3000);
   await ladeFotos();
 }
 
@@ -1075,8 +1103,7 @@ const TEXTE_FELDER = [
   { section: 'Verleih', felder: [
     { key: 'verleih.title',       label: 'Titel',         typ: 'input',    beschr: '' },
     { key: 'verleih.description', label: 'Beschreibung',  typ: 'textarea', beschr: '' },
-    { key: 'verleih.priceDay',    label: 'Preis pro Tag', typ: 'input',    beschr: 'z.B. 35 €' },
-    { key: 'verleih.priceWeek',   label: 'Preis pro Woche', typ: 'input', beschr: 'z.B. 120 €' },
+    { key: 'verleih.priceMonth',  label: 'Preis pro Monat', typ: 'input', beschr: 'z.B. 150 €' },
   ]},
   { section: 'Kontakt', felder: [
     { key: 'kontakt.adresse',   label: 'Adresse',   typ: 'input', beschr: '' },

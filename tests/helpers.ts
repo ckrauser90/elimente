@@ -37,6 +37,7 @@ export const SUPABASE_MOCK_JS = `
       upsert:  function(rows) { _method='POST'; _body=rows; return doFetch(); },
       eq:      function(col, val) { _eqFilters[col]=val; return q; },
       neq:     function() { return q; },
+      in:      function(col, vals) { _params.push(col + '=in.(' + vals.join(',') + ')'); return q; },
       gte:     function(col, val) { _params.push(col + '=gte.' + val); return q; },
       lte:     function(col, val) { _params.push(col + '=lte.' + val); return q; },
       order:   function() { return q; },

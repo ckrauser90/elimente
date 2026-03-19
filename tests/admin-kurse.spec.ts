@@ -290,6 +290,60 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
     expect(deleteAufgerufen).toBe(true);
   });
 
+  test('12.12 Kurstyp mit Terminen löschen – alle DELETE-Anfragen werden gesendet', async ({ page }) => {
+    const deletes: string[] = [];
+    await setupAdminAuth(page);
+    await page.route('**/rest/v1/kurs_typen*', async route => {
+      if (route.request().method() === 'DELETE') {
+        deletes.push('kurs_typen');
+        await route.fulfill({ status: 204, body: '' });
+      } else {
+        await route.fulfill({ json: [STANDARD_KURSTYP] });
+      }
+    });
+    await page.route('**/rest/v1/kurs_termine*', async route => {
+      if (route.request().method() === 'DELETE') {
+        deletes.push('kurs_termine');
+        await route.fulfill({ status: 204, body: '' });
+      } else {
+        await route.fulfill({ json: [{ id: 'termin-1', datum: '2026-06-01', buchungen_count: 1 }] });
+      }
+    });
+    await page.route('**/rest/v1/buchungen*', async route => {
+      if (route.request().method() === 'DELETE') {
+        deletes.push('buchungen');
+        await route.fulfill({ status: 204, body: '' });
+      } else {
+        await route.fulfill({ json: [] });
+      }
+    });
+    await page.route('**/rest/v1/verleih_buchungen*', async route => route.fulfill({ json: [] }));
+    await page.route('**/rest/v1/galerie_bilder*', async route => route.fulfill({ json: [] }));
+    await page.route('**/rest/v1/site_texte*', async route => route.fulfill({ json: [] }));
+
+    await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+
+    const kurstypenTab = page.locator('.tab-btn', { hasText: /Kurstypen/ });
+    if (await kurstypenTab.count() === 0) test.skip();
+    await kurstypenTab.click({ force: true });
+    await page.waitForTimeout(500);
+
+    // Alle confirm-Dialoge akzeptieren
+    page.on('dialog', async dialog => dialog.accept());
+
+    const loeschenBtn = page.locator('#kurstypen-liste button', { hasText: 'Löschen' }).first();
+    if (await loeschenBtn.count() === 0) test.skip();
+
+    await loeschenBtn.click({ force: true });
+    await page.waitForTimeout(800);
+
+    // Buchungen → Termine → Kurstyp müssen alle gelöscht werden
+    expect(deletes).toContain('buchungen');
+    expect(deletes).toContain('kurs_termine');
+    expect(deletes).toContain('kurs_typen');
+  });
+
   test('12.11 Kurstyp mit vorhandenen Terminen zeigt Warndialog', async ({ page }) => {
     let dialogText = '';
     await setupAdminAuth(page);

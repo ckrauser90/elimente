@@ -114,6 +114,40 @@ test.describe('Kurse', () => {
 
 });
 
+test.describe('Verleih-Section', () => {
+
+  test.beforeEach(async ({ page }) => {
+    await setCookieConsent(page, 'necessary');
+    await mockSupabase(page);
+    await page.goto('/');
+    await page.locator('#verleih').scrollIntoViewIfNeeded();
+  });
+
+  test('8.1 Verleih-Section ist vorhanden', async ({ page }) => {
+    await expect(page.locator('#verleih')).toBeAttached();
+  });
+
+  test('8.2 Monatspreis wird angezeigt (nicht Tag/Woche)', async ({ page }) => {
+    const preisPerioden = page.locator('#verleih .rental-price-item .period');
+    const count = await preisPerioden.count();
+    expect(count).toBe(1);
+    const periodText = await preisPerioden.first().textContent();
+    expect(periodText?.toLowerCase()).toContain('monat');
+    // Sicherstellen dass kein Tag- oder Wochenpreis mehr sichtbar ist
+    for (let i = 0; i < count; i++) {
+      const text = await preisPerioden.nth(i).textContent();
+      expect(text?.toLowerCase()).not.toContain('tag');
+      expect(text?.toLowerCase()).not.toContain('woche');
+    }
+  });
+
+  test('8.3 Preisbetrag ist nicht leer', async ({ page }) => {
+    const betrag = page.locator('#verleih .rental-price-item .amount');
+    await expect(betrag.first()).not.toBeEmpty();
+  });
+
+});
+
 test.describe('Galerie', () => {
 
   test.beforeEach(async ({ page }) => {
