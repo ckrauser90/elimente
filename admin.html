@@ -97,7 +97,11 @@ header {
   border-bottom: 1px solid var(--cream-dark);
   background: var(--cream-warm);
   padding: 0 2rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.nav-tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
   background: none;
   border: none;
@@ -112,6 +116,8 @@ header {
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .tab-btn:hover { color: var(--bark); }
 .tab-btn.aktiv { color: var(--sage); border-bottom-color: var(--sage); }

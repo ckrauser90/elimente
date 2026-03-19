@@ -510,18 +510,19 @@ section {
 }
 
 .card-link {
+  display: inline-block;
+  padding: 0.65rem 1.4rem;
+  background: var(--sage);
+  color: #fff;
+  border-radius: 2px;
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--sage);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: gap 0.3s;
+  transition: background 0.2s;
 }
-.card-link:hover { gap: 0.8rem; }
+.card-link:hover { background: var(--moss); }
 
 /* ─── KURSE ─── */
 #kurse { background: var(--cream); }

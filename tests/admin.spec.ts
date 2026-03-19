@@ -476,3 +476,38 @@ test.describe('Admin – buchungen_count Synchronisierung', () => {
   });
 
 });
+
+// ── Responsive Admin-Tabs ──────────────────────────────────
+
+test.describe('Admin – Responsive Tabs', () => {
+
+  test('11.23 Tab-Leiste ist auf schmalen Viewports horizontal scrollbar', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await blockSupabase(page);
+    await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(500);
+
+    const tabNav = page.locator('.nav-tabs');
+    await expect(tabNav).toBeAttached();
+
+    const overflow = await tabNav.evaluate(el => getComputedStyle(el).overflowX);
+    expect(overflow).toBe('auto');
+  });
+
+  test('11.24 Alle Tab-Buttons sind ohne Zeilenumbruch dargestellt', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await blockSupabase(page);
+    await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(500);
+
+    const buttons = page.locator('.tab-btn');
+    const count = await buttons.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const ws = await buttons.nth(i).evaluate(el => getComputedStyle(el).whiteSpace);
+      expect(ws).toBe('nowrap');
+    }
+  });
+
+});

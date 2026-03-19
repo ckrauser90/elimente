@@ -80,6 +80,18 @@ test.describe('Angebote', () => {
     }
   });
 
+  test('5.3 Karten-Links sind als grüne Buttons gestaltet (kein reiner Text-Link)', async ({ page }) => {
+    const links = page.locator('.offer-card .card-link');
+    const count = await links.count();
+    expect(count).toBeGreaterThan(0);
+    // Hintergrundfarbe muss gesetzt sein (kein transparenter Button)
+    for (let i = 0; i < count; i++) {
+      const bg = await links.nth(i).evaluate(el => getComputedStyle(el).backgroundColor);
+      expect(bg).not.toBe('rgba(0, 0, 0, 0)');
+      expect(bg).not.toBe('transparent');
+    }
+  });
+
 });
 
 test.describe('Kurse', () => {
