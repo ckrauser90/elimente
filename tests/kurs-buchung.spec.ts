@@ -50,26 +50,26 @@ async function navigiereZuApril2026(page: Page) {
   }
 }
 
-// Termin fast voll: max=4, buchungen_count=3 (1 Platz frei)
+// Termin mit freiem Platz: max=1, buchungen_count=0
 const TERMIN_FAST_VOLL = [{
-  id: 'termin-fast-voll',
+  id: 'termin-frei',
   datum: '2026-04-15',
   uhrzeit_start: '10:00:00',
-  max_teilnehmer: 4,
-  buchungen_count: 3,
+  max_teilnehmer: 1,
+  buchungen_count: 0,
   status: 'offen',
   notiz: null,
   kurs_typ_id: 'typ-1',
   kurs_typen: { id: 'typ-1', name: 'Einführungskurs' }
 }];
 
-// Termin komplett voll: max=4, buchungen_count=4
+// Termin voll: max=1, buchungen_count=1
 const TERMIN_VOLL = [{
   id: 'termin-voll',
   datum: '2026-04-22',
   uhrzeit_start: '14:00:00',
-  max_teilnehmer: 4,
-  buchungen_count: 4,
+  max_teilnehmer: 1,
+  buchungen_count: 1,
   status: 'voll',
   notiz: null,
   kurs_typ_id: 'typ-1',
@@ -114,7 +114,7 @@ test.describe('Kurs-Buchung – Kalender-Update', () => {
     // Erfolgsmeldung erscheint
     await expect(page.locator('.kal-erfolg')).toBeVisible({ timeout: 8000 });
 
-    // Nach optimistischem Update: max_teilnehmer(4) - (3+1) = 0 → .kal-voll
+    // Nach optimistischem Update: max_teilnehmer=1, buchungen_count wird 1 → .kal-voll
     await expect(page.locator('.kal-cell.kal-voll').first()).toBeAttached({ timeout: 3000 });
   });
 

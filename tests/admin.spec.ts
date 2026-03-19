@@ -54,9 +54,9 @@ async function mockAdminDaten(page: Page) {
           id: 'termin-1',
           datum: '2026-04-15',
           uhrzeit_start: '10:00:00',
-          max_teilnehmer: 8,
-          buchungen_count: 3,
-          status: 'offen',
+          max_teilnehmer: 1,
+          buchungen_count: 1,
+          status: 'voll',
           notiz: null,
           kurs_typen: { name: 'Einführungskurs' }
         }]
@@ -358,7 +358,7 @@ test.describe('Admin – buchungen_count Synchronisierung', () => {
       } else {
         await route.fulfill({
           json: [{ id: 'termin-1', datum: '2026-04-15', uhrzeit_start: '10:00:00',
-            max_teilnehmer: 8, buchungen_count: 1, status: 'offen',
+            max_teilnehmer: 1, buchungen_count: 1, status: 'voll',
             notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
         });
       }
@@ -384,7 +384,7 @@ test.describe('Admin – buchungen_count Synchronisierung', () => {
       } else {
         await route.fulfill({
           json: [{ id: 'termin-1', datum: '2026-04-15', uhrzeit_start: '10:00:00',
-            max_teilnehmer: 8, buchungen_count: 1, status: 'offen',
+            max_teilnehmer: 1, buchungen_count: 1, status: 'voll',
             notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
         });
       }
@@ -407,7 +407,7 @@ test.describe('Admin – buchungen_count Synchronisierung', () => {
         await route.fulfill({ json: [{}] });
       } else {
         await route.fulfill({
-          json: [{ id: 'termin-1', buchungen_count: 0, max_teilnehmer: 8, status: 'offen',
+          json: [{ id: 'termin-1', buchungen_count: 0, max_teilnehmer: 1, status: 'offen',
             datum: '2026-04-15', uhrzeit_start: '10:00:00', notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
         });
       }
@@ -433,7 +433,7 @@ test.describe('Admin – buchungen_count Synchronisierung', () => {
         await route.fulfill({ json: [{}] });
       } else {
         await route.fulfill({
-          json: [{ id: 'termin-1', buchungen_count: 2, max_teilnehmer: 8, status: 'offen',
+          json: [{ id: 'termin-1', buchungen_count: 1, max_teilnehmer: 1, status: 'voll',
             datum: '2026-04-15', uhrzeit_start: '10:00:00', notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
         });
       }
@@ -446,8 +446,8 @@ test.describe('Admin – buchungen_count Synchronisierung', () => {
     await loeschenBtn.click();
     await page.waitForTimeout(500);
 
-    // buchungen_count muss dekrementiert worden sein (2 → 1)
-    expect(terminPatchBody).toContain('"buchungen_count":1');
+    // buchungen_count muss dekrementiert worden sein (1 → 0)
+    expect(terminPatchBody).toContain('"buchungen_count":0');
   });
 
   test('11.22 Löschen einer stornierten Buchung dekrementiert buchungen_count NICHT', async ({ page }) => {
@@ -459,7 +459,7 @@ test.describe('Admin – buchungen_count Synchronisierung', () => {
         await route.fulfill({ json: [{}] });
       } else {
         await route.fulfill({
-          json: [{ id: 'termin-1', buchungen_count: 0, max_teilnehmer: 8, status: 'offen',
+          json: [{ id: 'termin-1', buchungen_count: 0, max_teilnehmer: 1, status: 'offen',
             datum: '2026-04-15', uhrzeit_start: '10:00:00', notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
         });
       }

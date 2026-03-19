@@ -519,10 +519,6 @@ tr:hover td { background: var(--cream); }
         </div>
       </div>
       <div>
-        <label class="form-label">Max. Teilnehmer *</label>
-        <input class="form-field" id="t-max" type="number" min="1" max="30" value="8" required>
-      </div>
-      <div>
         <label class="form-label">Notiz (intern, optional)</label>
         <input class="form-field" id="t-notiz" type="text" placeholder="z.B. Raum 2, Materialien vorbereiten">
       </div>
@@ -748,7 +744,7 @@ function renderTermine() {
               <td><strong>${new Date(t.datum + 'T00:00:00').toLocaleDateString('de-DE', { weekday:'short', day:'numeric', month:'short', year:'numeric' })}</strong></td>
               <td>${t.uhrzeit_start.slice(0, 5)} Uhr</td>
               <td>${t.kurs_typen?.name || '–'}</td>
-              <td>${t.buchungen_count} / ${t.max_teilnehmer}</td>
+              <td>${t.buchungen_count > 0 ? '✅ gebucht' : '🟢 frei'}</td>
               <td><span class="badge badge-${t.status}">${t.status}</span></td>
               <td style="color:var(--bark-muted);font-size:0.82rem">${t.notiz || ''}</td>
               <td style="display:flex;gap:0.4rem;white-space:nowrap">
@@ -804,14 +800,12 @@ function oeffneTerminModal(termin = null) {
     document.getElementById('t-typ').value   = termin.kurs_typ_id;
     document.getElementById('t-datum').value = termin.datum;
     document.getElementById('t-uhr').value   = termin.uhrzeit_start.slice(0, 5);
-    document.getElementById('t-max').value   = termin.max_teilnehmer;
     document.getElementById('t-notiz').value = termin.notiz || '';
   } else {
     document.getElementById('termin-modal-titel').textContent = 'Neuer Termin';
     document.getElementById('t-id').value    = '';
     document.getElementById('t-datum').value = '';
     document.getElementById('t-uhr').value   = '10:00';
-    document.getElementById('t-max').value   = '8';
     document.getElementById('t-notiz').value = '';
   }
   document.getElementById('termin-fehler').textContent = '';
@@ -832,7 +826,7 @@ async function speichereTermin() {
     kurs_typ_id:    document.getElementById('t-typ').value,
     datum:          document.getElementById('t-datum').value,
     uhrzeit_start:  document.getElementById('t-uhr').value,
-    max_teilnehmer: parseInt(document.getElementById('t-max').value),
+    max_teilnehmer: 1, // Jeder Termin hat genau einen Buchungsplatz
     notiz:          document.getElementById('t-notiz').value.trim() || null
   };
 

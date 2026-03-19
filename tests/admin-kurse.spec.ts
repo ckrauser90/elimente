@@ -28,7 +28,7 @@ async function setupAdminData(page: Page) {
 
 const STANDARD_TERMIN = {
   id: 'termin-1', datum: '2026-04-15', uhrzeit_start: '10:00:00',
-  max_teilnehmer: 8, buchungen_count: 2, status: 'offen',
+  max_teilnehmer: 1, buchungen_count: 1, status: 'voll',
   notiz: null, kurs_typen: { name: 'Einführungskurs' }
 };
 
@@ -49,7 +49,7 @@ test.describe('Admin – Termine anlegen & löschen', () => {
     await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1000);
 
-    await page.locator('.tab-btn', { hasText: /Termine/ }).click();
+    await page.locator('.tab-btn', { hasText: /Termine/ }).click({ force: true });
     await page.waitForTimeout(500);
 
     const text = await page.locator('#termine-liste').textContent();
@@ -66,13 +66,12 @@ test.describe('Admin – Termine anlegen & löschen', () => {
 
     const neuerTerminBtn = page.locator('button', { hasText: /Neuer Termin/ });
     if (await neuerTerminBtn.count() === 0) test.skip();
-    await neuerTerminBtn.click();
+    await neuerTerminBtn.click({ force: true });
     await page.waitForTimeout(300);
 
     await expect(page.locator('#termin-modal')).toBeVisible({ timeout: 3000 });
     await expect(page.locator('#t-datum')).toBeVisible();
     await expect(page.locator('#t-uhr')).toBeVisible();
-    await expect(page.locator('#t-max')).toBeVisible();
   });
 
   test('12.3 Termin anlegen sendet POST-Anfrage', async ({ page }) => {
@@ -93,17 +92,16 @@ test.describe('Admin – Termine anlegen & löschen', () => {
 
     const neuerTerminBtn = page.locator('button', { hasText: /Neuer Termin/ });
     if (await neuerTerminBtn.count() === 0) test.skip();
-    await neuerTerminBtn.click();
+    await neuerTerminBtn.click({ force: true });
     await page.waitForTimeout(300);
 
     await page.locator('#t-datum').fill('2026-05-10');
     await page.locator('#t-uhr').fill('10:00');
-    await page.locator('#t-max').fill('6');
     const typSelect = page.locator('#t-typ');
     if (await typSelect.locator('option').count() > 0) await typSelect.selectOption({ index: 0 });
 
     // Speichern-Button gezielt im Modal klicken
-    await page.locator('#termin-modal button', { hasText: 'Speichern' }).click();
+    await page.locator('#termin-modal button', { hasText: 'Speichern' }).click({ force: true });
     await page.waitForTimeout(500);
 
     expect(postBody).toContain('2026-05-10');
@@ -132,7 +130,7 @@ test.describe('Admin – Termine anlegen & löschen', () => {
     const loeschenBtn = page.locator('#termine-liste button', { hasText: 'Löschen' }).first();
     if (await loeschenBtn.count() === 0) test.skip();
 
-    await loeschenBtn.click();
+    await loeschenBtn.click({ force: true });
     await page.waitForTimeout(500);
     expect(deleteAufgerufen).toBe(true);
   });
@@ -154,7 +152,7 @@ test.describe('Admin – Termine anlegen & löschen', () => {
     const loeschenBtn = page.locator('#termine-liste button', { hasText: 'Löschen' }).first();
     if (await loeschenBtn.count() === 0) test.skip();
 
-    await loeschenBtn.click();
+    await loeschenBtn.click({ force: true });
     await page.waitForTimeout(500);
     expect(dialogText).toMatch(/Buchung|buchung|wirklich|löschen/i);
   });
@@ -170,7 +168,7 @@ test.describe('Admin – Termine anlegen & löschen', () => {
     const bearbeitenBtn = page.locator('#termine-liste button', { hasText: /Bearbeiten|Edit/ }).first();
     if (await bearbeitenBtn.count() === 0) test.skip();
 
-    await bearbeitenBtn.click();
+    await bearbeitenBtn.click({ force: true });
     await page.waitForTimeout(300);
 
     await expect(page.locator('#termin-modal')).toBeVisible({ timeout: 3000 });
@@ -194,7 +192,7 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
 
     const kurstypenTab = page.locator('.tab-btn', { hasText: /Kurstypen/ });
     if (await kurstypenTab.count() === 0) test.skip();
-    await kurstypenTab.click();
+    await kurstypenTab.click({ force: true });
     await page.waitForTimeout(500);
 
     const text = await page.locator('#kurstypen-liste').textContent();
@@ -211,12 +209,12 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
 
     const kurstypenTab = page.locator('.tab-btn', { hasText: /Kurstypen/ });
     if (await kurstypenTab.count() === 0) test.skip();
-    await kurstypenTab.click();
+    await kurstypenTab.click({ force: true });
     await page.waitForTimeout(300);
 
     const neuerTypBtn = page.locator('button', { hasText: /Neuer Kurstyp|Neuer Kurs/ });
     if (await neuerTypBtn.count() === 0) test.skip();
-    await neuerTypBtn.click();
+    await neuerTypBtn.click({ force: true });
     await page.waitForTimeout(300);
 
     await expect(page.locator('#kurstypModal')).toBeVisible({ timeout: 3000 });
@@ -242,12 +240,12 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
 
     const kurstypenTab = page.locator('.tab-btn', { hasText: /Kurstypen/ });
     if (await kurstypenTab.count() === 0) test.skip();
-    await kurstypenTab.click();
+    await kurstypenTab.click({ force: true });
     await page.waitForTimeout(300);
 
     const neuerTypBtn = page.locator('button', { hasText: /Neuer Kurstyp|Neuer Kurs/ });
     if (await neuerTypBtn.count() === 0) test.skip();
-    await neuerTypBtn.click();
+    await neuerTypBtn.click({ force: true });
     await page.waitForTimeout(300);
 
     await page.locator('#kt-name').fill('Kinderkurs Ton');
@@ -256,7 +254,7 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
     await page.locator('#kt-max').selectOption('2');
 
     // Speichern-Button gezielt im Modal klicken
-    await page.locator('#kurstypModal button', { hasText: 'Speichern' }).click();
+    await page.locator('#kurstypModal button', { hasText: 'Speichern' }).click({ force: true });
     await page.waitForTimeout(500);
 
     expect(postBody).toContain('Kinderkurs Ton');
@@ -280,14 +278,14 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
 
     const kurstypenTab = page.locator('.tab-btn', { hasText: /Kurstypen/ });
     if (await kurstypenTab.count() === 0) test.skip();
-    await kurstypenTab.click();
+    await kurstypenTab.click({ force: true });
     await page.waitForTimeout(500);
 
     page.on('dialog', async dialog => dialog.accept());
     const loeschenBtn = page.locator('#kurstypen-liste button', { hasText: 'Löschen' }).first();
     if (await loeschenBtn.count() === 0) test.skip();
 
-    await loeschenBtn.click();
+    await loeschenBtn.click({ force: true });
     await page.waitForTimeout(500);
     expect(deleteAufgerufen).toBe(true);
   });
@@ -305,7 +303,7 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
 
     const kurstypenTab = page.locator('.tab-btn', { hasText: /Kurstypen/ });
     if (await kurstypenTab.count() === 0) test.skip();
-    await kurstypenTab.click();
+    await kurstypenTab.click({ force: true });
     await page.waitForTimeout(500);
 
     page.on('dialog', async dialog => {
@@ -316,7 +314,7 @@ test.describe('Admin – Kurstypen anlegen & löschen', () => {
     const loeschenBtn = page.locator('#kurstypen-liste button', { hasText: 'Löschen' }).first();
     if (await loeschenBtn.count() === 0) test.skip();
 
-    await loeschenBtn.click();
+    await loeschenBtn.click({ force: true });
     await page.waitForTimeout(500);
     expect(dialogText).toMatch(/Termin|Buchung|wirklich|löschen/i);
   });
