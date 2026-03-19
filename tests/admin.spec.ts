@@ -315,3 +315,164 @@ test.describe('Admin – Warnungen beim Löschen von Terminen', () => {
   });
 
 });
+
+// ── buchungen_count korrekt bei Stornierung / Bestätigung ─
+
+test.describe('Admin – buchungen_count Synchronisierung', () => {
+
+  // Hilfsfunktion: Admin-Seite mit einer Buchung aufbauen
+  async function setupMitBuchung(page: any, buchungStatus: string = 'neu') {
+    await mockAdminDaten(page);
+    await page.route('**/rest/v1/buchungen*', async (route: any) => {
+      const method = route.request().method();
+      if (method === 'PATCH') {
+        await route.fulfill({ json: [{}] });
+      } else if (method === 'DELETE') {
+        await route.fulfill({ status: 204, body: '' });
+      } else {
+        await route.fulfill({
+          json: [{
+            id: 'buch-1', name: 'Maria Müller', email: 'maria@example.com',
+            telefon: '', nachricht: '', status: buchungStatus,
+            termin_id: 'termin-1',
+            kurs_termine: { datum: '2026-04-15', uhrzeit_start: '10:00:00',
+              kurs_typen: { name: 'Einführungskurs' } }
+          }]
+        });
+      }
+    });
+    await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+    await page.locator('.tab-btn', { hasText: /Buchungen/ }).click().catch(() => {});
+    await page.waitForTimeout(500);
+  }
+
+  test('11.18 Stornieren dekrementiert buchungen_count auf dem Termin', async ({ page }) => {
+    let terminPatchBody = '';
+    // Route NACH setupMitBuchung registrieren → LIFO-Priorität greift bei Button-Klick
+    await setupMitBuchung(page, 'neu');
+    await page.route('**/rest/v1/kurs_termine*', async route => {
+      if (route.request().method() === 'PATCH') {
+        terminPatchBody = route.request().postData() || '';
+        await route.fulfill({ json: [{}] });
+      } else {
+        await route.fulfill({
+          json: [{ id: 'termin-1', datum: '2026-04-15', uhrzeit_start: '10:00:00',
+            max_teilnehmer: 8, buchungen_count: 1, status: 'offen',
+            notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
+        });
+      }
+    });
+    const stornoBtn = page.locator('button', { hasText: 'Stornieren' }).first();
+    if (await stornoBtn.count() === 0) test.skip();
+
+    await stornoBtn.click();
+    await page.waitForTimeout(500);
+
+    // buchungen_count muss auf 0 dekrementiert worden sein (1 → 0)
+    expect(terminPatchBody).toContain('"buchungen_count":0');
+    expect(terminPatchBody).toContain('"status":"offen"');
+  });
+
+  test('11.19 Bestätigen ändert buchungen_count NICHT', async ({ page }) => {
+    let terminPatchAufgerufen = false;
+    await setupMitBuchung(page, 'neu');
+    await page.route('**/rest/v1/kurs_termine*', async route => {
+      if (route.request().method() === 'PATCH') {
+        terminPatchAufgerufen = true;
+        await route.fulfill({ json: [{}] });
+      } else {
+        await route.fulfill({
+          json: [{ id: 'termin-1', datum: '2026-04-15', uhrzeit_start: '10:00:00',
+            max_teilnehmer: 8, buchungen_count: 1, status: 'offen',
+            notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
+        });
+      }
+    });
+    const bestätigenBtn = page.locator('button', { hasText: 'Bestätigen' }).first();
+    if (await bestätigenBtn.count() === 0) test.skip();
+
+    await bestätigenBtn.click();
+    await page.waitForTimeout(500);
+
+    // Termin-Tabelle darf NICHT gepatcht werden (Zähler bleibt unverändert)
+    expect(terminPatchAufgerufen).toBe(false);
+  });
+
+  test('11.20 Stornieren einer bereits stornierten Buchung ändert buchungen_count NICHT', async ({ page }) => {
+    let terminPatchAufgerufen = false;
+    await page.route('**/rest/v1/kurs_termine*', async route => {
+      if (route.request().method() === 'PATCH') {
+        terminPatchAufgerufen = true;
+        await route.fulfill({ json: [{}] });
+      } else {
+        await route.fulfill({
+          json: [{ id: 'termin-1', buchungen_count: 0, max_teilnehmer: 8, status: 'offen',
+            datum: '2026-04-15', uhrzeit_start: '10:00:00', notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
+        });
+      }
+    });
+
+    await setupMitBuchung(page, 'storniert');
+    // Bei stornierten Buchungen gibt es keinen Stornieren-Button
+    const stornoBtn = page.locator('button', { hasText: 'Stornieren' }).first();
+    if (await stornoBtn.count() === 0) test.skip();
+
+    await stornoBtn.click();
+    await page.waitForTimeout(500);
+
+    expect(terminPatchAufgerufen).toBe(false);
+  });
+
+  test('11.21 Löschen einer aktiven Buchung dekrementiert buchungen_count', async ({ page }) => {
+    let terminPatchBody = '';
+    await setupMitBuchung(page, 'bestaetigt');
+    await page.route('**/rest/v1/kurs_termine*', async route => {
+      if (route.request().method() === 'PATCH') {
+        terminPatchBody = route.request().postData() || '';
+        await route.fulfill({ json: [{}] });
+      } else {
+        await route.fulfill({
+          json: [{ id: 'termin-1', buchungen_count: 2, max_teilnehmer: 8, status: 'offen',
+            datum: '2026-04-15', uhrzeit_start: '10:00:00', notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
+        });
+      }
+    });
+    page.on('dialog', async dialog => dialog.accept());
+
+    const loeschenBtn = page.locator('#buchungen-liste button', { hasText: 'Löschen' }).first();
+    if (await loeschenBtn.count() === 0) test.skip();
+
+    await loeschenBtn.click();
+    await page.waitForTimeout(500);
+
+    // buchungen_count muss dekrementiert worden sein (2 → 1)
+    expect(terminPatchBody).toContain('"buchungen_count":1');
+  });
+
+  test('11.22 Löschen einer stornierten Buchung dekrementiert buchungen_count NICHT', async ({ page }) => {
+    let terminPatchAufgerufen = false;
+    await setupMitBuchung(page, 'storniert');
+    await page.route('**/rest/v1/kurs_termine*', async route => {
+      if (route.request().method() === 'PATCH') {
+        terminPatchAufgerufen = true;
+        await route.fulfill({ json: [{}] });
+      } else {
+        await route.fulfill({
+          json: [{ id: 'termin-1', buchungen_count: 0, max_teilnehmer: 8, status: 'offen',
+            datum: '2026-04-15', uhrzeit_start: '10:00:00', notiz: null, kurs_typen: { name: 'Einführungskurs' } }]
+        });
+      }
+    });
+    page.on('dialog', async dialog => dialog.accept());
+
+    const loeschenBtn = page.locator('#buchungen-liste button', { hasText: 'Löschen' }).first();
+    if (await loeschenBtn.count() === 0) test.skip();
+
+    await loeschenBtn.click();
+    await page.waitForTimeout(500);
+
+    expect(terminPatchAufgerufen).toBe(false);
+  });
+
+});

@@ -1283,17 +1283,43 @@ function renderBuchungen() {
     </table>`;
 }
 
-async function buchungStatus(id, status) {
-  await sb.from('buchungen').update({ status }).eq('id', id);
-  await ladeBuchungen();
+async function buchungStatus(id, neuerStatus) {
+  // Aktuelle Buchung laden, um vorherigen Status und Termin-ID zu kennen
+  const { data: buchung } = await sb.from('buchungen')
+    .select('status, termin_id').eq('id', id).single();
+
+  await sb.from('buchungen').update({ status: neuerStatus }).eq('id', id);
+
+  // Buchungszähler am Termin anpassen:
+  // – Stornieren: Platz freigeben (nur wenn Buchung vorher aktiv war)
+  // – Bestätigen: kein Zähler-Update nötig (bereits beim Buchen erhöht)
+  if (buchung?.termin_id && neuerStatus === 'storniert' && buchung.status !== 'storniert') {
+    const { data: t } = await sb.from('kurs_termine')
+      .select('buchungen_count, max_teilnehmer').eq('id', buchung.termin_id).single();
+    if (t) {
+      const neuerCount = Math.max(0, t.buchungen_count - 1);
+      await sb.from('kurs_termine').update({
+        buchungen_count: neuerCount,
+        status: neuerCount < t.max_teilnehmer ? 'offen' : 'voll'
+      }).eq('id', buchung.termin_id);
+    }
+  }
+
+  await Promise.all([ladeBuchungen(), ladeTermine()]);
 }
 
 async function loescheBuchung(id, terminId) {
   if (!confirm('Buchung wirklich löschen?')) return;
+
+  // Vorherigen Status laden, um Zähler nur bei aktiven Buchungen zu dekrementieren
+  const { data: buchung } = await sb.from('buchungen')
+    .select('status').eq('id', id).single();
+
   const { error } = await sb.from('buchungen').delete().eq('id', id);
   if (error) { alert('Fehler beim Löschen: ' + error.message); return; }
-  // Buchungszähler am Termin dekrementieren und Status ggf. zurücksetzen
-  if (terminId) {
+
+  // Buchungszähler dekrementieren, außer Buchung war bereits storniert
+  if (terminId && buchung?.status !== 'storniert') {
     const { data: t } = await sb.from('kurs_termine')
       .select('buchungen_count, max_teilnehmer').eq('id', terminId).single();
     if (t) {
