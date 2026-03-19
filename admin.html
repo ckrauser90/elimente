@@ -1040,7 +1040,7 @@ async function uploadFoto(bereich, input) {
     await sb.from('galerie_bilder').delete().eq('id', altes.id);
   }
 
-  await sb.from('galerie_bilder').insert({ bereich, url: urlData.publicUrl, storage_path: pfad, sort_order: 0 });
+  await sb.from('galerie_bilder').insert({ bereich, url: urlData.publicUrl, storage_path: pfad, sort_order: 0, aktiv: true });
 
   if (progressEl) progressEl.textContent = '✓ Gespeichert';
   setTimeout(() => { if (progressEl) progressEl.textContent = ''; }, 3000);
@@ -1070,7 +1070,7 @@ async function uploadGalerieFoto(input, sortOrder, alteBildId) {
     await sb.from('galerie_bilder').delete().eq('id', alteBildId);
   }
 
-  await sb.from('galerie_bilder').insert({ bereich: 'galerie', url: urlData.publicUrl, storage_path: pfad, sort_order: sortOrder });
+  await sb.from('galerie_bilder').insert({ bereich: 'galerie', url: urlData.publicUrl, storage_path: pfad, sort_order: sortOrder, aktiv: true });
 
   progressEl.textContent = '✓ Gespeichert';
   setTimeout(() => { progressEl.textContent = ''; }, 3000);
