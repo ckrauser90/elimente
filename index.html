@@ -2031,6 +2031,12 @@ let _kalMonat        = new Date(); _kalMonat.setDate(1);
 
   renderSite(siteData); // Mit ggf. aktualisierten Texten rendern
 
+  // Nach dynamischem Rendern zum URL-Anker scrollen (z.B. #standort)
+  if (location.hash) {
+    const el = document.querySelector(location.hash);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
   if (_sb) {
     ladeUndRenderKalender();
   } else {
