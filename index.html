@@ -1641,7 +1641,6 @@ function renderSite(data) {
       <li><a href="#ueber">Über mich</a></li>
       <li><a href="#angebote">Angebote</a></li>
       <li><a href="#kurse">Kurse</a></li>
-      <li><a href="#galerie">Galerie</a></li>
       <li><a href="#shop">Shop</a></li>
       <li><a href="#verleih">Verleih</a></li>
       <li><a href="#standort">Standort</a></li>
@@ -1708,7 +1707,7 @@ function renderSite(data) {
         ${_bilder.icons.kaufen ? `<img src="${_bilder.icons.kaufen.url}" alt="Keramik kaufen" class="offer-icon">` : `<span class="offer-emoji">🎨</span>`}
         <h3>Keramik kaufen</h3>
         <p>Jedes Stück ein Unikat — handgedreht und liebevoll glasiert. Von Tassen bis zu Vasen und Dekoration.</p>
-        <a href="#galerie" class="card-link">Zur Galerie →</a>
+        <a href="#shop" class="card-link">Zum Shop →</a>
       </div>
       <div class="offer-card reveal">
         ${_bilder.icons.kurse ? `<img src="${_bilder.icons.kurse.url}" alt="Kurse" class="offer-icon">` : `<span class="offer-emoji">🤲</span>`}
@@ -1779,32 +1778,6 @@ function renderSite(data) {
     <div id="kal-wrapper-sub" class="kal-wrapper-sub">Wähle einen grün markierten Tag im Kalender</div>
     <div id="kurs-kalender"><div class="kal-laden">Termine werden geladen …</div></div>
   </div>
-
-  <!-- GALERIE -->
-  <section id="galerie">
-    <div class="section-intro centered reveal">
-      <div class="section-label">Galerie</div>
-      <h2>Handgefertigte Stücke</h2>
-      <p>Ein Einblick in die Welt meiner Keramik.</p>
-    </div>
-    <div class="gallery-masonry reveal">
-      ${_bilder.galerie.length > 0
-        ? _bilder.galerie.map(b => `
-            <div class="gallery-cell">
-              <img src="${b.url}" alt="${b.alt_text || 'Keramik'}" class="gallery-foto">
-              <div class="gallery-label">${b.alt_text || ''}</div>
-            </div>
-          `).join('')
-        : d.galerie.map(g => `
-            <div class="gallery-cell">
-              ${g.emoji}
-              <div class="gallery-label">${g.label}</div>
-            </div>
-          `).join('')
-      }
-    </div>
-    ${_bilder.galerie.length === 0 ? `<p class="gallery-hint reveal">${d.galerieHint}</p>` : ''}
-  </section>
 
   <!-- ETSY SHOP -->
   <section id="shop">
@@ -1889,6 +1862,32 @@ function renderSite(data) {
       <a href="agb.html">AGB</a>
     </div>
   </footer>
+
+  <!-- GALERIE (unterhalb Footer) -->
+  <section id="galerie">
+    <div class="section-intro centered reveal">
+      <div class="section-label">Galerie</div>
+      <h2>Handgefertigte Stücke</h2>
+      <p>Ein Einblick in die Welt meiner Keramik.</p>
+    </div>
+    <div class="gallery-masonry reveal">
+      ${_bilder.galerie.length > 0
+        ? _bilder.galerie.map(b => `
+            <div class="gallery-cell">
+              <img src="${b.url}" alt="${b.alt_text || 'Keramik'}" class="gallery-foto">
+              <div class="gallery-label">${b.alt_text || ''}</div>
+            </div>
+          `).join('')
+        : d.galerie.map(g => `
+            <div class="gallery-cell">
+              ${g.emoji}
+              <div class="gallery-label">${g.label}</div>
+            </div>
+          `).join('')
+      }
+    </div>
+    ${_bilder.galerie.length === 0 ? `<p class="gallery-hint reveal">${d.galerieHint}</p>` : ''}
+  </section>
   `;
 
   // Re-init observers
