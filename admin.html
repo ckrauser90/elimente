@@ -1040,7 +1040,8 @@ async function uploadFoto(bereich, input) {
     await sb.from('galerie_bilder').delete().eq('id', altes.id);
   }
 
-  await sb.from('galerie_bilder').insert({ bereich, url: urlData.publicUrl, storage_path: pfad, sort_order: 0, aktiv: true });
+  const { error: dbErr } = await sb.from('galerie_bilder').insert({ bereich, url: urlData.publicUrl, storage_path: pfad, sort_order: 0, aktiv: true });
+  if (dbErr) { if (progressEl) progressEl.textContent = 'DB-Fehler: ' + dbErr.message; return; }
 
   if (progressEl) progressEl.textContent = '✓ Gespeichert';
   setTimeout(() => { if (progressEl) progressEl.textContent = ''; }, 3000);
@@ -1070,7 +1071,8 @@ async function uploadGalerieFoto(input, sortOrder, alteBildId) {
     await sb.from('galerie_bilder').delete().eq('id', alteBildId);
   }
 
-  await sb.from('galerie_bilder').insert({ bereich: 'galerie', url: urlData.publicUrl, storage_path: pfad, sort_order: sortOrder, aktiv: true });
+  const { error: dbErr } = await sb.from('galerie_bilder').insert({ bereich: 'galerie', url: urlData.publicUrl, storage_path: pfad, sort_order: sortOrder, aktiv: true });
+  if (dbErr) { progressEl.textContent = 'DB-Fehler: ' + dbErr.message; return; }
 
   progressEl.textContent = '✓ Gespeichert';
   setTimeout(() => { progressEl.textContent = ''; }, 3000);
@@ -1477,8 +1479,10 @@ async function kurstypAktivToggle(id, aktuellerWert) {
 }
 
 async function loescheKurstyp(id) {
-  const { data: termine } = await sb.from('kurs_termine')
+  const { data: termine, error: fetchErr } = await sb.from('kurs_termine')
     .select('id, buchungen_count').eq('kurs_typ_id', id);
+
+  if (fetchErr) { alert('Fehler beim Laden der Termine: ' + fetchErr.message); return; }
 
   if (termine && termine.length > 0) {
     const totalBuchungen = termine.reduce((s, t) => s + (t.buchungen_count || 0), 0);
@@ -1488,12 +1492,15 @@ async function loescheKurstyp(id) {
     if (!confirm(warnMsg)) return;
     // Buchungen zuerst löschen (FK RESTRICT), dann Termine
     const terminIds = termine.map(t => t.id);
-    await sb.from('buchungen').delete().in('termin_id', terminIds);
-    await sb.from('kurs_termine').delete().eq('kurs_typ_id', id);
+    const { error: bErr } = await sb.from('buchungen').delete().in('termin_id', terminIds);
+    if (bErr) { alert('Fehler beim Löschen der Buchungen: ' + bErr.message); return; }
+    const { error: tErr } = await sb.from('kurs_termine').delete().eq('kurs_typ_id', id);
+    if (tErr) { alert('Fehler beim Löschen der Termine: ' + tErr.message); return; }
   } else {
     if (!confirm('Kurstyp wirklich löschen?')) return;
   }
-  await sb.from('kurs_typen').delete().eq('id', id);
+  const { error: ktErr } = await sb.from('kurs_typen').delete().eq('id', id);
+  if (ktErr) { alert('Fehler beim Löschen des Kurstyps: ' + ktErr.message); return; }
   await ladeKurstypen();
 }
 

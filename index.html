@@ -2041,7 +2041,7 @@ let _kalMonat        = new Date(); _kalMonat.setDate(1);
 
 // Bilder aus Supabase laden
 async function ladeBilder() {
-  const { data } = await _sb.from('galerie_bilder').select('*').eq('aktiv', true).order('sort_order');
+  const { data } = await _sb.from('galerie_bilder').select('*').neq('aktiv', false).order('sort_order');
   if (!data) return;
   _bilder.hero             = data.find(b => b.bereich === 'hero')         || null;
   _bilder.about            = data.find(b => b.bereich === 'about')        || null;
