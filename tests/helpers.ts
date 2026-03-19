@@ -67,6 +67,16 @@ export const SUPABASE_MOCK_JS = `
       from: function(table) {
         return makeQuery(table);
       },
+      rpc: function(fn, args) {
+        return fetch(BASE + '/rest/v1/rpc/' + fn, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': 'mock', 'Authorization': 'Bearer mock' },
+          body: JSON.stringify(args || {})
+        }).then(function(r) {
+          if (r.status === 204) return { data: null, error: null };
+          return r.json().then(function(data) { return { data: data, error: null }; });
+        }).catch(function(e) { return { data: null, error: e }; });
+      },
       storage: {
         from: function() {
           return {
