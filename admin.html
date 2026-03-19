@@ -1294,7 +1294,7 @@ async function buchungStatus(id, neuerStatus) {
       const neuerCount = Math.max(0, t.buchungen_count - 1);
       await sb.from('kurs_termine').update({
         buchungen_count: neuerCount,
-        status: neuerCount < t.max_teilnehmer ? 'offen' : 'voll'
+        status: neuerCount < 1 ? 'offen' : 'voll'
       }).eq('id', buchung.termin_id);
     }
   }
@@ -1320,7 +1320,7 @@ async function loescheBuchung(id, terminId) {
       const neuerCount = Math.max(0, t.buchungen_count - 1);
       await sb.from('kurs_termine').update({
         buchungen_count: neuerCount,
-        status: neuerCount < t.max_teilnehmer ? 'offen' : 'voll'
+        status: neuerCount < 1 ? 'offen' : 'voll'
       }).eq('id', terminId);
     }
   }

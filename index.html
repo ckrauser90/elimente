@@ -1735,7 +1735,7 @@ function renderSite(data) {
     <div class="kurs-list">
       ${_kurstypen.length > 0
         ? _kurstypen.map(k => {
-            const freiTermine = _termine.filter(t => t.kurs_typen?.id === k.id && t.status === 'offen').length;
+            const freiTermine = _termine.filter(t => t.kurs_typen?.id === k.id && (t.buchungen_count || 0) < 1).length;
             const verfuegbar = freiTermine > 0
               ? `<span class="kurs-verfuegbar kurs-verfuegbar-frei">● ${freiTermine} Termin${freiTermine > 1 ? 'e' : ''} verfügbar</span>`
               : `<span class="kurs-verfuegbar kurs-verfuegbar-voll">● Keine freien Termine</span>`;
@@ -2070,7 +2070,7 @@ function renderKalender() {
 
     if (_modus === 'kurse') {
       const termine  = tagMap[tag] || [];
-      const hatFreie = termine.some(t => t.status === 'offen');
+      const hatFreie = termine.some(t => (t.buchungen_count || 0) < 1);
       const istSelected = datum === _selDatum;
 
       let cls = 'kal-cell';
@@ -2434,7 +2434,7 @@ async function kalBuchungSenden(e) {
     const idx = _termine.findIndex(t => t.id === _selTermin.id);
     if (idx !== -1) {
       _termine[idx] = { ..._termine[idx], buchungen_count: (_termine[idx].buchungen_count || 0) + 1 };
-      if (_termine[idx].buchungen_count >= _termine[idx].max_teilnehmer) {
+      if (_termine[idx].buchungen_count >= 1) {
         _termine[idx].status = 'voll';
       }
     }
