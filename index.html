@@ -1876,7 +1876,7 @@ function renderSite(data) {
     </div>
     <div class="rental-card reveal">
       ${_bilder.verleihBild
-        ? `<img src="${esc(_bilder.verleihBild.url)}" alt="${esc(_bilder.verleihBild.alt_text || 'Töpferscheibe leihen')}" class="rental-bild">`
+        ? `<img src="${_bilder.verleihBild.url}" alt="${_bilder.verleihBild.alt_text || 'Töpferscheibe leihen'}" class="rental-bild">`
         : `<div class="rental-visual">🔄</div>`}
       <div class="rental-body">
         <h3>${d.verleih.title}</h3>
