@@ -1851,18 +1851,6 @@ function renderSite(data) {
   </section>
 
   <!-- FOOTER -->
-  <footer>
-    <div>
-      <span class="logo" style="font-size:1.2rem">${d.name}<span class="logo-dot"></span></span>
-      &nbsp;&nbsp;${d.footer.copyright}
-    </div>
-    <div>
-      <a href="impressum.html">Impressum</a>
-      <a href="datenschutz.html">Datenschutz</a>
-      <a href="agb.html">AGB</a>
-    </div>
-  </footer>
-
   <!-- GALERIE (unterhalb Footer) -->
   <section id="galerie">
     <div class="section-intro centered reveal">
@@ -1888,6 +1876,18 @@ function renderSite(data) {
     </div>
     ${_bilder.galerie.length === 0 ? `<p class="gallery-hint reveal">${d.galerieHint}</p>` : ''}
   </section>
+
+  <footer>
+    <div>
+      <span class="logo" style="font-size:1.2rem">${d.name}<span class="logo-dot"></span></span>
+      &nbsp;&nbsp;${d.footer.copyright}
+    </div>
+    <div>
+      <a href="impressum.html">Impressum</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="agb.html">AGB</a>
+    </div>
+  </footer>
   `;
 
   // Re-init observers
