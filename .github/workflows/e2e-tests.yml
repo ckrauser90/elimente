@@ -1,0 +1,50 @@
+# ═══════════════════════════════════════════════════════════
+# ELIMENTE – E2E Tests mit Playwright
+#
+# Läuft bei jedem Pull Request und Push auf main.
+# Tests prüfen Cookie-Banner, Navigation, Buchungsworkflow,
+# Admin-Bereich und rechtliche Seiten.
+# ═══════════════════════════════════════════════════════════
+
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Playwright Browser installieren
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E Tests ausführen
+        run: npx playwright test --project=chromium
+        env:
+          CI: true
+
+      - name: Test-Bericht hochladen
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
