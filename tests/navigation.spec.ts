@@ -17,8 +17,8 @@ test.describe('Navigation', () => {
     await page.waitForTimeout(300);
     await expect(page.locator('.nav-links a[href="#ueber"]')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.nav-links a[href="#kurse"]')).toBeVisible();
-    await expect(page.locator('.nav-links a[href="#galerie"]')).toBeVisible();
     await expect(page.locator('.nav-links a[href="#verleih"]')).toBeVisible();
+    // #galerie wurde aus der Navigation entfernt (erscheint unterhalb des Footers)
   });
 
   test('2.2 Hamburger-Menü auf Mobilgeräten sichtbar', async ({ page }) => {
