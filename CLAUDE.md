@@ -68,6 +68,18 @@ Alle Texte, Preise und Kontaktdaten stehen im `siteData` Objekt. Nur dort Inhalt
 - Rate Limiting bei Login-Versuchen (z.B. max. 5 Versuche, dann Sperre)
 - Admin-Routen nicht öffentlich erratbar machen
 
+## Sicherheitsanforderungen (Security Requirements)
+- **Input-Validierung**: Alle User-Inputs mit Whitelist validieren – nur erlaubte Zeichen/Formate akzeptieren
+- **Prepared Statements**: Für DB-Queries keine String-Concatenation verwenden; Supabase-Client-Queries gelten als parametrisiert
+- **Passwort-Hashing**: bcrypt mit mindestens 12 Salt Rounds (wird von Supabase Auth übernommen)
+- **Sichere Cookies**: HttpOnly + Secure + SameSite=Strict für alle Session-Cookies (Supabase handhabt das intern)
+- **CSRF-Schutz**: CSRF-Token bei allen state-ändernden Requests (Formulare, POST/PATCH/DELETE)
+- **Security Headers**: CSP, X-Frame-Options, HSTS über Hosting-Konfiguration oder Meta-Tags setzen
+- **Authentifizierung & Autorisierung**: Admin-Bereich nur mit gültiger, authentifizierter Supabase-Session zugänglich; Row Level Security (RLS) in Supabase aktivieren
+- **Keine Secrets im Code**: API-Keys, Passwörter und sonstige Secrets ausschließlich über `.env` oder `config.local.js` (gitignored) – nie im Repository
+- **Fehlerseiten**: Fehlermeldungen dürfen keine technischen Details (Stack Traces, DB-Fehlermeldungen) an den Nutzer ausgeben
+- **XSS-Prävention**: Alle aus der Datenbank oder von Nutzern stammenden Daten müssen vor dem Einsetzen in `innerHTML` HTML-escaped werden; `textContent` bevorzugen
+
 ## Etsy-Shop Integration (Iteration 1)
 - Shop: ELIMENTE (<https://www.etsy.com/shop/ELIMENTE>)
 - Anbindung über Etsy API v3 (Open API)
