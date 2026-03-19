@@ -601,6 +601,17 @@ const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "DEIN_SUPABASE_ANON_KEY";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// XSS-Schutz: Alle Nutzerdaten vor dem Einsetzen in innerHTML escapen
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 // Daten-Cache
 let _kurstypen = [];
 let _termine   = [];
@@ -750,7 +761,7 @@ function renderTermine() {
               <td>${t.kurs_typen?.name || '–'}</td>
               <td>${t.buchungen_count} / ${t.max_teilnehmer}</td>
               <td><span class="badge badge-${t.status}">${t.status}</span></td>
-              <td style="color:var(--bark-muted);font-size:0.82rem">${t.notiz || ''}</td>
+              <td style="color:var(--bark-muted);font-size:0.82rem">${esc(t.notiz)}</td>
               <td style="display:flex;gap:0.4rem;white-space:nowrap">
                 <button class="btn btn-ghost btn-sm" onclick="bearbeiteTermin('${t.id}')">Bearbeiten</button>
                 ${t.status === 'abgesagt'
@@ -1179,16 +1190,16 @@ function renderVerleihBuchungen() {
             <td><strong>${new Date(b.start_datum + 'T00:00:00').toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })}</strong></td>
             <td>${new Date(b.end_datum + 'T00:00:00').toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })}</td>
             <td>${tage} Tage</td>
-            <td><strong>${b.name}</strong></td>
-            <td><a href="mailto:${b.email}" style="color:var(--sage)">${b.email}</a></td>
-            <td>${b.telefon || '–'}</td>
-            <td style="max-width:180px;font-size:0.82rem;color:var(--bark-muted)">${b.nachricht || ''}</td>
-            <td><span class="badge badge-${b.status}">${b.status}</span></td>
+            <td><strong>${esc(b.name)}</strong></td>
+            <td><a href="mailto:${esc(b.email)}" style="color:var(--sage)">${esc(b.email)}</a></td>
+            <td>${esc(b.telefon) || '–'}</td>
+            <td style="max-width:180px;font-size:0.82rem;color:var(--bark-muted)">${esc(b.nachricht)}</td>
+            <td><span class="badge badge-${esc(b.status)}">${esc(b.status)}</span></td>
             <td style="display:flex;gap:0.4rem;white-space:nowrap">
               ${b.status === 'neu'
-                ? `<button class="btn btn-success btn-sm" onclick="verleihStatus('${b.id}','bestaetigt')">Bestätigen</button>` : ''}
+                ? `<button class="btn btn-success btn-sm" onclick="verleihStatus('${esc(b.id)}','bestaetigt')">Bestätigen</button>` : ''}
               ${b.status !== 'storniert'
-                ? `<button class="btn btn-danger btn-sm" onclick="verleihStatus('${b.id}','storniert')">Stornieren</button>` : ''}
+                ? `<button class="btn btn-danger btn-sm" onclick="verleihStatus('${esc(b.id)}','storniert')">Stornieren</button>` : ''}
             </td>
           </tr>`;
         }).join('')}
@@ -1264,18 +1275,18 @@ function renderBuchungen() {
             <td style="white-space:nowrap">${b.kurs_termine?.datum
               ? new Date(b.kurs_termine.datum + 'T00:00:00').toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })
               : '–'}</td>
-            <td>${b.kurs_termine?.kurs_typen?.name || '–'}</td>
-            <td><strong>${b.name}</strong></td>
-            <td><a href="mailto:${b.email}" style="color:var(--sage)">${b.email}</a></td>
-            <td>${b.telefon || '–'}</td>
-            <td style="max-width:200px;font-size:0.82rem;color:var(--bark-muted)">${b.nachricht || ''}</td>
-            <td><span class="badge badge-${b.status}">${b.status}</span></td>
+            <td>${esc(b.kurs_termine?.kurs_typen?.name) || '–'}</td>
+            <td><strong>${esc(b.name)}</strong></td>
+            <td><a href="mailto:${esc(b.email)}" style="color:var(--sage)">${esc(b.email)}</a></td>
+            <td>${esc(b.telefon) || '–'}</td>
+            <td style="max-width:200px;font-size:0.82rem;color:var(--bark-muted)">${esc(b.nachricht)}</td>
+            <td><span class="badge badge-${esc(b.status)}">${esc(b.status)}</span></td>
             <td style="display:flex;gap:0.4rem;white-space:nowrap">
               ${b.status === 'neu'
-                ? `<button class="btn btn-success btn-sm" onclick="buchungStatus('${b.id}','bestaetigt')">Bestätigen</button>` : ''}
+                ? `<button class="btn btn-success btn-sm" onclick="buchungStatus('${esc(b.id)}','bestaetigt')">Bestätigen</button>` : ''}
               ${b.status !== 'storniert'
-                ? `<button class="btn btn-ghost btn-sm" onclick="buchungStatus('${b.id}','storniert')">Stornieren</button>` : ''}
-              <button class="btn btn-danger btn-sm" onclick="loescheBuchung('${b.id}','${b.termin_id}')">Löschen</button>
+                ? `<button class="btn btn-ghost btn-sm" onclick="buchungStatus('${esc(b.id)}','storniert')">Stornieren</button>` : ''}
+              <button class="btn btn-danger btn-sm" onclick="loescheBuchung('${esc(b.id)}','${esc(b.termin_id)}')">Löschen</button>
             </td>
           </tr>
         `).join('')}
