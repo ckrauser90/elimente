@@ -715,7 +715,6 @@ async function ladeTermine() {
   const { data } = await sb
     .from('kurs_termine')
     .select('*, kurs_typen(*)')
-    .gte('datum', new Date().toISOString().split('T')[0])
     .order('datum');
   _termine = data || [];
   renderTermine();
@@ -743,13 +742,9 @@ function zeigeTab(name, evt) {
 
 // ── TERMINE ──────────────────────────────────────────────
 
-function renderTermine() {
-  const el = document.getElementById('termine-liste');
-  if (!_termine.length) {
-    el.innerHTML = '<p class="leer-hinweis">Noch keine Termine angelegt.</p>';
-    return;
-  }
-  el.innerHTML = `
+function renderTermineTabelle(liste) {
+  if (!liste.length) return '<p class="leer-hinweis">Keine Termine.</p>';
+  return `
     <div class="tabelle-wrap">
       <table>
         <thead><tr>
@@ -757,7 +752,7 @@ function renderTermine() {
           <th>Buchungen</th><th>Status</th><th>Notiz</th><th></th>
         </tr></thead>
         <tbody>
-          ${_termine.map(t => `
+          ${liste.map(t => `
             <tr>
               <td><strong>${new Date(t.datum + 'T00:00:00').toLocaleDateString('de-DE', { weekday:'short', day:'numeric', month:'short', year:'numeric' })}</strong></td>
               <td>${t.uhrzeit_start.slice(0, 5)} Uhr</td>
@@ -777,6 +772,27 @@ function renderTermine() {
         </tbody>
       </table>
     </div>`;
+}
+
+function renderTermine() {
+  const el = document.getElementById('termine-liste');
+  if (!_termine.length) {
+    el.innerHTML = '<p class="leer-hinweis">Noch keine Termine angelegt.</p>';
+    return;
+  }
+  const heute = new Date().toISOString().split('T')[0];
+  const kommend   = _termine.filter(t => t.datum >= heute).sort((a, b) => a.datum.localeCompare(b.datum));
+  const vergangen = _termine.filter(t => t.datum <  heute).sort((a, b) => b.datum.localeCompare(a.datum));
+
+  el.innerHTML = `
+    ${renderTermineTabelle(kommend)}
+    ${vergangen.length ? `
+      <details style="margin-top:1.5rem">
+        <summary style="cursor:pointer;font-weight:600;color:var(--bark-muted);padding:0.5rem 0">
+          Vergangene Termine (${vergangen.length})
+        </summary>
+        ${renderTermineTabelle(vergangen)}
+      </details>` : ''}`;
 }
 
 async function loescheTermin(id) {
@@ -1305,17 +1321,9 @@ function setBuchFilter(name) {
   renderBuchungen();
 }
 
-function renderBuchungen() {
-  const el = document.getElementById('buchungen-liste');
-  let liste = _buchungen;
-  if (_buchFilterTermin) {
-    liste = liste.filter(b => b.kurs_termine?.kurs_typen?.name === _buchFilterTermin);
-  }
-  if (!liste.length) {
-    el.innerHTML = '<p class="leer-hinweis">Keine Buchungen gefunden.</p>';
-    return;
-  }
-  el.innerHTML = `
+function renderBuchungenTabelle(liste) {
+  if (!liste.length) return '<p class="leer-hinweis">Keine Buchungen.</p>';
+  return `
     <table>
       <thead><tr>
         <th>Datum</th><th>Kurs</th><th>Name</th><th>E-Mail</th>
@@ -1344,6 +1352,31 @@ function renderBuchungen() {
         `).join('')}
       </tbody>
     </table>`;
+}
+
+function renderBuchungen() {
+  const el = document.getElementById('buchungen-liste');
+  let liste = _buchungen;
+  if (_buchFilterTermin) {
+    liste = liste.filter(b => b.kurs_termine?.kurs_typen?.name === _buchFilterTermin);
+  }
+  if (!liste.length) {
+    el.innerHTML = '<p class="leer-hinweis">Keine Buchungen gefunden.</p>';
+    return;
+  }
+  const heute = new Date().toISOString().split('T')[0];
+  const kommend   = liste.filter(b => (b.kurs_termine?.datum || '9999') >= heute);
+  const vergangen = liste.filter(b => (b.kurs_termine?.datum || '9999') <  heute);
+
+  el.innerHTML = `
+    ${renderBuchungenTabelle(kommend)}
+    ${vergangen.length ? `
+      <details style="margin-top:1.5rem">
+        <summary style="cursor:pointer;font-weight:600;color:var(--bark-muted);padding:0.5rem 0">
+          Vergangene Buchungen (${vergangen.length})
+        </summary>
+        ${renderBuchungenTabelle(vergangen)}
+      </details>` : ''}`;
 }
 
 // Sendet Daten an einen Make.com Webhook
