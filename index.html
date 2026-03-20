@@ -185,6 +185,7 @@ nav.scrolled {
   transition: color 0.3s;
 }
 .nav-links a:hover { color: var(--sage); }
+.nav-instagram { display: inline-flex; align-items: center; padding: 0.1rem 0; }
 
 .hamburger {
   display: none;
@@ -1658,12 +1659,13 @@ const siteData = {
     email: "hallo@elemente-keramik.de",
     telefon: "0123 – 456 789 0",
     instagram: "@elemente.keramik",
+    instagramUrl: "#", // ← Instagram-URL hier eintragen (z.B. https://www.instagram.com/elemente.keramik)
   },
 
   // ── Webhooks (Make.com → Brevo) ──
   // URLs werden im Admin-Bereich unter Texte → Webhooks eingetragen
   webhooks: {
-    buchungAngefragt:   "", // Kurs-Buchungsanfrage eingegangen
+    buchungAngefragt:   "https://hook.eu1.make.com/es4rs7xpk6r3khl6wk4fys9469apxyoy", // Kurs-Buchungsanfrage eingegangen
     buchungBestaetigt:  "", // Kurs-Buchung vom Admin bestätigt
     buchungStorniert:   "", // Kurs-Buchung storniert
     verleihAngefragt:   "", // Verleih-Anfrage eingegangen
@@ -1729,6 +1731,9 @@ function renderSite(data) {
       <li><a href="#shop">Shop</a></li>
       <li><a href="#verleih">Verleih</a></li>
       <li><a href="#standort">Standort</a></li>
+      <li><a href="${d.kontakt.instagramUrl || '#'}" target="_blank" rel="noopener" aria-label="Instagram" class="nav-instagram">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      </a></li>
     </ul>
     <button class="hamburger" aria-label="Menü" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">
       <span></span><span></span><span></span>
@@ -1969,6 +1974,10 @@ function renderSite(data) {
       <a href="impressum.html">Impressum</a>
       <a href="datenschutz.html">Datenschutz</a>
       <a href="agb.html">AGB</a>
+      <a href="${d.kontakt.instagramUrl || '#'}" target="_blank" rel="noopener" aria-label="Instagram" style="display:inline-flex;align-items:center;gap:0.3rem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        Instagram
+      </a>
     </div>
   </footer>
   `;
@@ -2583,8 +2592,13 @@ async function kalBuchungSenden(e) {
 
     // Webhook: Buchung angefragt
     sendeWebhook(siteData.webhooks.buchungAngefragt, {
-      name: _whName, email: _whEmail, telefon: _whTel, nachricht: _whMsg,
-      kurstyp: _whKurstyp, datum: _whDatum, uhrzeit: _whUhrzeit
+      name:     _whName,
+      email:    _whEmail,
+      telefon:  _whTel,
+      kurs:     _whKurstyp,
+      datum:    _whDatum,
+      uhrzeit:  _whUhrzeit,
+      nachricht: _whMsg
     });
   }
 }
