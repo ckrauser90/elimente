@@ -1436,10 +1436,11 @@ async function buchungStatus(id, neuerStatus) {
       ? 'https://hook.eu1.make.com/5jo9n8p02uo39u8vl1ebu8gngdjxwvu7'
       : _siteTexte['webhooks.buchungStorniert'];
     sendeWebhook(whUrl, {
-      email:    buchung.email                           || '',
-      name:     buchung.name                            || '',
-      datum:    buchung.kurs_termine?.datum             || '',
-      uhrzeit:  buchung.kurs_termine?.uhrzeit_start     || '',
+      email:    buchung.email                                      || '',
+      name:     buchung.name                                       || '',
+      kurs:     buchung.kurs_termine?.kurs_typen?.name             || '',
+      datum:    buchung.kurs_termine?.datum                        || '',
+      uhrzeit:  buchung.kurs_termine?.uhrzeit_start                || '',
       status:   neuerStatus
     });
   }
