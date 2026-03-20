@@ -1433,14 +1433,13 @@ async function buchungStatus(id, neuerStatus) {
   // Webhook senden (bestätigt / storniert)
   if (buchung && (neuerStatus === 'bestaetigt' || neuerStatus === 'storniert')) {
     const whUrl = neuerStatus === 'bestaetigt'
-      ? _siteTexte['webhooks.buchungBestaetigt']
+      ? 'https://hook.eu1.make.com/5jo9n8p02uo39u8vl1ebu8gngdjxwvu7'
       : _siteTexte['webhooks.buchungStorniert'];
     sendeWebhook(whUrl, {
-      name:     buchung.name,
-      email:    buchung.email,
-      kurstyp:  buchung.kurs_termine?.kurs_typen?.name || null,
-      datum:    buchung.kurs_termine?.datum             || null,
-      uhrzeit:  buchung.kurs_termine?.uhrzeit_start     || null,
+      email:    buchung.email                           || '',
+      name:     buchung.name                            || '',
+      datum:    buchung.kurs_termine?.datum             || '',
+      uhrzeit:  buchung.kurs_termine?.uhrzeit_start     || '',
       status:   neuerStatus
     });
   }
