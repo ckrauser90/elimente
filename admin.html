@@ -621,6 +621,7 @@ let _kurstypen = [];
 let _termine   = [];
 let _buchungen = [];
 let _buchFilterTermin = null;
+let _buchFilterStatus = 'alle'; // 'alle' | 'neu' | 'bestaetigt' | 'storniert'
 let _termineFilter = 'alle'; // 'alle' | 'frei' | 'gebucht'
 
 // ── AUTHENTIFIZIERUNG ────────────────────────────────────
@@ -729,7 +730,6 @@ async function ladeBuchungen() {
     .order('created_at', { ascending: false })
     .limit(200);
   _buchungen = data || [];
-  renderBuchungenFilter();
   renderBuchungen();
 }
 
@@ -1322,21 +1322,8 @@ async function verleihStatus(id, status) {
 
 // ── BUCHUNGEN ────────────────────────────────────────────
 
-function renderBuchungenFilter() {
-  const el = document.getElementById('buchungen-filter');
-  // Eindeutige Kursnamen aus Buchungen sammeln
-  const kurse = [...new Set(_buchungen.map(b => b.kurs_termine?.kurs_typen?.name).filter(Boolean))];
-
-  el.innerHTML = `
-    <button class="filter-btn${_buchFilterTermin === null ? ' aktiv' : ''}" onclick="setBuchFilter(null)">Alle</button>
-    ${kurse.map(k => `
-      <button class="filter-btn${_buchFilterTermin === k ? ' aktiv' : ''}" onclick="setBuchFilter('${k}')">${k}</button>
-    `).join('')}`;
-}
-
-function setBuchFilter(name) {
-  _buchFilterTermin = name;
-  renderBuchungenFilter();
+function setBuchStatusFilter(s) {
+  _buchFilterStatus = s;
   renderBuchungen();
 }
 
@@ -1375,17 +1362,26 @@ function renderBuchungenTabelle(liste) {
 
 function renderBuchungen() {
   const el = document.getElementById('buchungen-liste');
-  let liste = _buchungen;
-  if (_buchFilterTermin) {
-    liste = liste.filter(b => b.kurs_termine?.kurs_typen?.name === _buchFilterTermin);
-  }
-  if (!liste.length) {
+  const filterEl = document.getElementById('buchungen-filter');
+  const heute = new Date().toISOString().split('T')[0];
+
+  let kommend   = _buchungen.filter(b => (b.kurs_termine?.datum || '9999') >= heute);
+  const vergangen = _buchungen.filter(b => (b.kurs_termine?.datum || '9999') <  heute);
+
+  // Filter-Buttons
+  if (filterEl) filterEl.innerHTML = `
+    <button class="filter-btn${_buchFilterStatus === 'alle'        ? ' aktiv' : ''}" onclick="setBuchStatusFilter('alle')">Alle (${kommend.length})</button>
+    <button class="filter-btn${_buchFilterStatus === 'neu'         ? ' aktiv' : ''}" onclick="setBuchStatusFilter('neu')">🆕 Neu (${kommend.filter(b => b.status === 'neu').length})</button>
+    <button class="filter-btn${_buchFilterStatus === 'bestaetigt'  ? ' aktiv' : ''}" onclick="setBuchStatusFilter('bestaetigt')">✅ Bestätigt (${kommend.filter(b => b.status === 'bestaetigt').length})</button>
+    <button class="filter-btn${_buchFilterStatus === 'storniert'   ? ' aktiv' : ''}" onclick="setBuchStatusFilter('storniert')">✗ Storniert (${kommend.filter(b => b.status === 'storniert').length})</button>`;
+
+  // Status-Filter anwenden
+  if (_buchFilterStatus !== 'alle') kommend = kommend.filter(b => b.status === _buchFilterStatus);
+
+  if (!kommend.length && !vergangen.length) {
     el.innerHTML = '<p class="leer-hinweis">Keine Buchungen gefunden.</p>';
     return;
   }
-  const heute = new Date().toISOString().split('T')[0];
-  const kommend   = liste.filter(b => (b.kurs_termine?.datum || '9999') >= heute);
-  const vergangen = liste.filter(b => (b.kurs_termine?.datum || '9999') <  heute);
 
   el.innerHTML = `
     ${renderBuchungenTabelle(kommend)}
