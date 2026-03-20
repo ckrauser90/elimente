@@ -1434,7 +1434,7 @@ async function buchungStatus(id, neuerStatus) {
   if (buchung && (neuerStatus === 'bestaetigt' || neuerStatus === 'storniert')) {
     const whUrl = neuerStatus === 'bestaetigt'
       ? 'https://hook.eu1.make.com/5jo9n8p02uo39u8vl1ebu8gngdjxwvu7'
-      : 'https://hook.eu1.make.com/4hmdr24p5ngtdg85gk11o4fq7ptkyfom';
+      : 'https://hook.eu1.make.com/5jo9n8p02uo39u8vl1ebu8gngdjxwvu7';
     sendeWebhook(whUrl, {
       email:    buchung.email                                      || '',
       name:     buchung.name                                       || '',
