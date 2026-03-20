@@ -2,11 +2,11 @@
 # ELIMENTE – Dev Branch CI
 #
 # Läuft bei jedem Push auf "dev".
-# Baut die Seite (mit echten Keys) und stellt sie als Artifact
-# zum Download bereit → so kann die Seite vor dem Merge auf
-# main lokal geprüft werden.
+# 1. Seite bauen (Keys einfügen, Etsy laden)
+# 2. E2E-Tests aus dem tests-Branch ausführen
+# 3. Nur wenn alle Tests grün: Artifact hochladen
 #
-# Artifact herunterladen:
+# Artifact herunterladen (nach erfolgreichem Run):
 #   GitHub → Actions → letzter "Dev CI" Run → Artifacts → site-preview
 #   ZIP entpacken → index.html im Browser öffnen
 # ═══════════════════════════════════════════════════════════
@@ -19,11 +19,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-preview:
+  test-and-build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Code auschecken
+      - name: Code auschecken (dev)
         uses: actions/checkout@v4
 
       - name: Supabase-Keys einfügen
@@ -57,23 +57,64 @@ jobs:
           PYEOF
 
       - name: Dummy config.local.js erstellen
-        run: echo "/* dev-preview – keys sind direkt im HTML */" > config.local.js
+        run: echo "/* dev-ci – keys sind direkt im HTML */" > config.local.js
 
-      - name: Einfacher HTML-Check (keine kaputten Platzhalter)
+      - name: HTML-Check (keine fehlenden Platzhalter)
         run: |
-          # Prüfen ob alle Supabase-Platzhalter ersetzt wurden
           if grep -r "DEINE_SUPABASE_URL\|DEIN_SUPABASE_ANON_KEY" *.html; then
-            echo "❌ Fehler: Supabase-Platzhalter wurden nicht ersetzt!"
-            echo "   Bitte SUPABASE_URL und SUPABASE_KEY in den GitHub Secrets prüfen."
+            echo "❌ Fehler: Supabase-Platzhalter nicht ersetzt!"
             exit 1
           fi
           echo "✅ Alle Platzhalter ersetzt."
 
-      - name: Site-Preview als Artifact hochladen
+      # ── Test-Dateien aus dem tests-Branch holen ──────────────
+      - name: Test-Dateien auschecken (tests-Branch)
+        uses: actions/checkout@v4
+        with:
+          ref: tests
+          path: _tests_branch  # In separaten Ordner laden
+
+      - name: Test-Dateien in Arbeitsverzeichnis kopieren
+        run: |
+          cp _tests_branch/package.json .
+          cp _tests_branch/playwright.config.ts .
+          cp -r _tests_branch/tests .
+          rm -rf _tests_branch
+
+      # ── Node.js + Playwright installieren ────────────────────
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Playwright-Browser installieren
+        run: npx playwright install chromium --with-deps
+
+      # ── E2E-Tests ausführen ───────────────────────────────────
+      - name: E2E-Tests ausführen
+        run: npx playwright test --project=chromium --reporter=line
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
+
+      # ── Testergebnis hochladen (auch bei Fehler, zur Analyse) ─
+      - name: Playwright-Report hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      # ── Nur bei grünen Tests: Site-Artifact hochladen ─────────
+      - name: Site-Preview hochladen
         uses: actions/upload-artifact@v4
         with:
           name: site-preview
-          # Alle relevanten Dateien einschließen
           path: |
             *.html
             *.css
