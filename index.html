@@ -2098,11 +2098,15 @@ async function ladeAktiveKurstypen() {
 }
 
 async function ladeKursTermine() {
-  const heute = new Date().toISOString().split('T')[0];
+  // Termine erst ab morgen anzeigen – verhindert kurzfristige Buchungen am selben Tag
+  const morgen = new Date();
+  morgen.setDate(morgen.getDate() + 1);
+  const morgenStr = morgen.toISOString().split('T')[0];
+
   const { data, error } = await _sb
     .from('kurs_termine')
     .select('*, kurs_typen(*)')
-    .gte('datum', heute)
+    .gte('datum', morgenStr)
     .neq('status', 'abgesagt')
     .order('datum');
   if (!error) _termine = data || [];
