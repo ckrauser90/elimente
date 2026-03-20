@@ -9,6 +9,19 @@
 # Artifact herunterladen (nach erfolgreichem Run):
 #   GitHub → Actions → letzter "Dev CI" Run → Artifacts → site-preview
 #   ZIP entpacken → index.html im Browser öffnen
+#
+# ── NEUE FUNKTIONEN ────────────────────────────────────────
+# Wenn eine neue Funktion in dev entwickelt wird, müssen auch
+# die Tests im tests-Branch aktualisiert werden:
+#
+#   1. Neue Funktion in dev entwickeln und committen
+#   2. Zum tests-Branch wechseln:
+#        git checkout tests
+#   3. Neue/angepasste Tests in tests/ hinzufügen
+#   4. Tests lokal prüfen (npx playwright test)
+#   5. Committen und pushen:
+#        git checkout dev && git push
+#   → Der CI holt sich die Tests automatisch aus tests-Branch
 # ═══════════════════════════════════════════════════════════
 
 name: Dev CI
