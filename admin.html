@@ -620,7 +620,6 @@ function esc(str) {
 let _kurstypen = [];
 let _termine   = [];
 let _buchungen = [];
-let _buchFilterTermin = null;
 let _buchFilterStatus = 'alle'; // 'alle' | 'neu' | 'bestaetigt' | 'storniert'
 let _termineFilter = 'alle'; // 'alle' | 'frei' | 'gebucht'
 
@@ -835,7 +834,8 @@ async function terminStatusAendern(id, neuerStatus) {
     : 'Termin wieder aktivieren?');
   if (!bestätigt) return;
 
-  await sb.from('kurs_termine').update({ status: neuerStatus }).eq('id', id);
+  const { error } = await sb.from('kurs_termine').update({ status: neuerStatus }).eq('id', id);
+  if (error) { alert('Fehler: ' + error.message); return; }
   await ladeTermine();
 }
 
@@ -1116,8 +1116,12 @@ async function uploadGalerieFoto(input, sortOrder, alteBildId) {
 
 async function loescheFoto(id, storagePfad, bereich) {
   if (!confirm('Foto wirklich löschen?')) return;
-  if (storagePfad) await sb.storage.from('bilder').remove([storagePfad]);
-  await sb.from('galerie_bilder').delete().eq('id', id);
+  if (storagePfad) {
+    const { error: storErr } = await sb.storage.from('bilder').remove([storagePfad]);
+    if (storErr) console.warn('[loescheFoto] Storage-Fehler:', storErr.message);
+  }
+  const { error: dbErr } = await sb.from('galerie_bilder').delete().eq('id', id);
+  if (dbErr) { alert('Fehler beim Löschen: ' + dbErr.message); return; }
   await ladeFotos();
 }
 
@@ -1290,8 +1294,9 @@ async function ladeVerleihAktiv() {
 async function verleihAktivSpeichern(checkbox) {
   const wert = checkbox.checked ? 'true' : 'false';
   const status = document.getElementById('verleih-aktiv-status');
-  await sb.from('site_texte')
+  const { error } = await sb.from('site_texte')
     .upsert({ key: 'verleih.aktiv', wert, beschreibung: 'Scheibe aktuell verfügbar für Verleih' }, { onConflict: 'key' });
+  if (error) { alert('Fehler beim Speichern: ' + error.message); return; }
   if (status) status.textContent = checkbox.checked
     ? '✓ Scheibe ist buchbar — Kunden können anfragen'
     : '✗ Verleih deaktiviert — kein Buchungsformular sichtbar';
@@ -1406,10 +1411,12 @@ async function sendeWebhook(url, daten) {
 
 async function buchungStatus(id, neuerStatus) {
   // Aktuelle Buchung laden, um vorherigen Status und Termin-ID zu kennen
-  const { data: buchung } = await sb.from('buchungen')
+  const { data: buchung, error: fetchErr } = await sb.from('buchungen')
     .select('status, termin_id, name, email, kurs_termine(datum, uhrzeit_start, kurs_typen(name))').eq('id', id).single();
+  if (fetchErr) { alert('Fehler beim Laden der Buchung: ' + fetchErr.message); return; }
 
-  await sb.from('buchungen').update({ status: neuerStatus }).eq('id', id);
+  const { error: updateErr } = await sb.from('buchungen').update({ status: neuerStatus }).eq('id', id);
+  if (updateErr) { alert('Fehler beim Aktualisieren: ' + updateErr.message); return; }
 
   // Buchungszähler am Termin anpassen:
   // – Stornieren: Platz freigeben (nur wenn Buchung vorher aktiv war)
@@ -1426,11 +1433,11 @@ async function buchungStatus(id, neuerStatus) {
     }
   }
 
-  // Webhook senden (bestätigt / storniert)
+  // Webhook senden (bestätigt / storniert) – URL aus Admin-Texten laden
   if (buchung && (neuerStatus === 'bestaetigt' || neuerStatus === 'storniert')) {
     const whUrl = neuerStatus === 'bestaetigt'
-      ? 'https://hook.eu1.make.com/5jo9n8p02uo39u8vl1ebu8gngdjxwvu7'
-      : 'https://hook.eu1.make.com/5jo9n8p02uo39u8vl1ebu8gngdjxwvu7';
+      ? _siteTexte['webhooks.buchungBestaetigt']
+      : _siteTexte['webhooks.buchungStorniert'];
     sendeWebhook(whUrl, {
       email:    buchung.email                                      || '',
       name:     buchung.name                                       || '',

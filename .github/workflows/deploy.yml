@@ -80,6 +80,9 @@ jobs:
               f.write(html)
           PYEOF
 
+      - name: Dummy config.local.js erstellen (verhindert 404 im Browser)
+        run: echo "/* production – keys sind direkt im HTML */" > config.local.js
+
       - name: GitHub Pages konfigurieren
         uses: actions/configure-pages@v5
 

@@ -14,6 +14,7 @@
 <meta property="og:url" content="https://elimente.de/">
 <meta property="og:title" content="Elimente – Töpferkurse, Keramik & Töpferscheibe leihen im Allgäu">
 <meta property="og:description" content="Handgemachte Keramik, Töpferkurse und Töpferscheiben-Verleih in Kaltental im Allgäu. Kleine Gruppen, persönliche Betreuung.">
+<meta property="og:image" content="https://sxaiktqgmqlikbhuufti.supabase.co/storage/v1/object/public/bilder/hero/1773778060748.png">
 <meta property="og:locale" content="de_DE">
 
 <!-- Schema.org: LocalBusiness + Pottery Studio -->
@@ -24,6 +25,7 @@
   "name": "Elimente – Töpferei",
   "description": "Handgemachte Keramik, Töpferkurse für Anfänger und Fortgeschrittene sowie Töpferscheiben-Verleih im Allgäu.",
   "url": "https://elimente.de",
+  "telephone": "+49 834499 27625",
   "email": "info@elimente.com",
   "address": {
     "@type": "PostalAddress",
@@ -1687,6 +1689,8 @@ const siteData = {
 
 function renderEtsyShop() {
   const shopUrl = 'https://www.etsy.com/de/shop/ELIMENTE';
+  // XSS-Schutz für Etsy-API-Daten
+  const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   if (!_etsyDaten.length) {
     return `<div style="text-align:center;padding:1rem 0">
       <p style="color:var(--bark-muted);margin-bottom:1.5rem">Besuche meinen Etsy Shop für alle aktuellen Stücke.</p>
@@ -1695,16 +1699,18 @@ function renderEtsyShop() {
   }
   const karten = _etsyDaten.slice(0, 8).map(p => {
     const img   = p.Images?.[0]?.url_570xN || '';
+    const url   = esc(p.url || '');
+    const titel = esc(p.title || '');
     const preis = p.price
       ? (p.price.amount / p.price.divisor).toFixed(2).replace('.', ',') + '\u00a0' + p.price.currency_code
       : '';
     return `
-      <a href="${p.url}" target="_blank" rel="noopener" class="etsy-card">
+      <a href="${url}" target="_blank" rel="noopener" class="etsy-card">
         ${img
-          ? `<div class="etsy-card-img"><img src="${img}" alt="${p.title}" loading="lazy"></div>`
+          ? `<div class="etsy-card-img"><img src="${esc(img)}" alt="${titel}" loading="lazy"></div>`
           : `<div class="etsy-card-img etsy-card-img-placeholder">🏺</div>`}
         <div class="etsy-card-body">
-          <div class="etsy-card-name">${p.title}</div>
+          <div class="etsy-card-name">${titel}</div>
           ${preis ? `<div class="etsy-card-price">${preis}</div>` : ''}
         </div>
       </a>`;
@@ -2063,8 +2069,8 @@ let _kalMonat        = new Date(); _kalMonat.setDate(1);
 
 // Bilder aus Supabase laden
 async function ladeBilder() {
-  const { data } = await _sb.from('galerie_bilder').select('*').neq('aktiv', false).order('sort_order');
-  if (!data) return;
+  const { data, error } = await _sb.from('galerie_bilder').select('*').neq('aktiv', false).order('sort_order');
+  if (error || !data) return;
   _bilder.hero             = data.find(b => b.bereich === 'hero')         || null;
   _bilder.about            = data.find(b => b.bereich === 'about')        || null;
   _bilder.galerie          = data.filter(b => b.bereich === 'galerie');
@@ -2102,8 +2108,8 @@ async function ladeUndRenderKalender() {
 }
 
 async function ladeAktiveKurstypen() {
-  const { data } = await _sb.from('kurs_typen').select('*').eq('aktiv', true).order('sort_order');
-  _kurstypen = data || [];
+  const { data, error } = await _sb.from('kurs_typen').select('*').eq('aktiv', true).order('sort_order');
+  if (!error) _kurstypen = data || [];
 }
 
 async function ladeKursTermine() {
@@ -2316,6 +2322,8 @@ function kalBuchungsFormular() {
       </div>
       <input class="form-field" id="b-tel" type="tel" placeholder="Telefon (optional – erleichtert die Abstimmung)" autocomplete="tel">
       <textarea class="form-field" id="b-msg" placeholder="Nachricht (optional)" rows="3"></textarea>
+      <!-- Honeypot: Nur Bots füllen dieses Feld aus -->
+      <input type="text" name="website" id="b-hp" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
       <button type="submit" class="btn btn-primary" id="b-submit" style="width:fit-content">Jetzt buchen →</button>
       <p class="kal-kleingedruckt">* Pflichtfelder · Du erhältst eine Bestätigung per E-Mail.</p>
     </form>`;
@@ -2433,6 +2441,8 @@ function verleihPanel() {
       </div>
       <input class="form-field" id="vb-tel" type="tel" placeholder="Telefon (optional – erleichtert die Abstimmung)" autocomplete="tel">
       <textarea class="form-field" id="vb-msg" placeholder="Nachricht / Fragen (optional)" rows="3"></textarea>
+      <!-- Honeypot: Nur Bots füllen dieses Feld aus -->
+      <input type="text" name="website" id="vb-hp" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
       <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap">
         <button type="submit" class="btn btn-primary" id="vb-submit" style="width:fit-content">Jetzt anfragen →</button>
         <button type="button" class="btn btn-ghost" style="font-size:0.78rem;padding:0.5rem 1rem"
@@ -2450,9 +2460,6 @@ function verleihKlick(datum) {
     _verleihStart = datum;
     _verleihEnde  = null;
   } else if (!_verleihEnde) {
-    const tage = Math.round(
-      (new Date(datum + 'T00:00:00') - new Date(_verleihStart + 'T00:00:00')) / 86400000
-    );
     if (datum < _einMonatSpäter(_verleihStart)) return; // Zu kurz — visuell schon gesperrt, trotzdem sicher abfangen
 
     // Überschneidung prüfen
@@ -2477,18 +2484,28 @@ function verleihKlick(datum) {
 async function verleihBuchungSenden(e) {
   e.preventDefault();
   if (!_verleihStart || !_verleihEnde || !_sb) return;
+  // Honeypot: Bot-Submissions abweisen (echte Nutzer lassen dieses Feld leer)
+  if (document.getElementById('vb-hp')?.value) return;
+
+  // Formulardaten VOR dem await sichern – Elemente werden nach Erfolgsmeldung aus dem DOM entfernt
+  const _vbName      = document.getElementById('vb-name').value.trim();
+  const _vbEmail     = document.getElementById('vb-email').value.trim();
+  const _vbTel       = document.getElementById('vb-tel').value.trim();
+  const _vbMsg       = document.getElementById('vb-msg').value.trim();
+  const _vbStart     = _verleihStart;
+  const _vbEnde      = _verleihEnde;
 
   const btn = document.getElementById('vb-submit');
   btn.textContent = 'Wird gesendet …';
   btn.disabled = true;
 
   const { error } = await _sb.from('verleih_buchungen').insert({
-    start_datum: _verleihStart,
-    end_datum:   _verleihEnde,
-    name:        document.getElementById('vb-name').value.trim(),
-    email:       document.getElementById('vb-email').value.trim(),
-    telefon:     document.getElementById('vb-tel').value.trim()  || null,
-    nachricht:   document.getElementById('vb-msg').value.trim()  || null
+    start_datum: _vbStart,
+    end_datum:   _vbEnde,
+    name:        _vbName,
+    email:       _vbEmail,
+    telefon:     _vbTel  || null,
+    nachricht:   _vbMsg  || null
   });
 
   if (error) {
@@ -2496,26 +2513,20 @@ async function verleihBuchungSenden(e) {
     btn.style.background = 'var(--terracotta)';
     setTimeout(() => { btn.textContent = 'Jetzt anfragen →'; btn.disabled = false; btn.style.background = ''; }, 3500);
   } else {
-    const name  = document.getElementById('vb-name').value.trim();
-    const email = document.getElementById('vb-email').value.trim();
     const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     document.getElementById('kal-panel').innerHTML = `
       <div class="kal-erfolg">
         <div class="kal-erfolg-haken">✓</div>
         <h3>Anfrage eingegangen!</h3>
-        <p>Danke, <strong>${esc(name)}</strong>! Ich melde mich per E-Mail an <strong>${esc(email)}</strong>.</p>
+        <p>Danke, <strong>${esc(_vbName)}</strong>! Ich melde mich per E-Mail an <strong>${esc(_vbEmail)}</strong>.</p>
         <button class="btn btn-ghost" onclick="_verleihStart=null;_verleihEnde=null;ladeUndRenderKalender()"
                 style="margin-top:1.2rem">Neue Anfrage stellen</button>
       </div>`;
-    // Webhook: Drehscheibe angefragt (vor null-Reset senden)
-    sendeWebhook(siteData.webhooks.verleihAngefragt, {
-      name:        document.getElementById('vb-name').value.trim(),
-      email:       document.getElementById('vb-email').value.trim(),
-      telefon:     document.getElementById('vb-tel').value.trim() || null,
-      nachricht:   document.getElementById('vb-msg').value.trim() || null,
-      start_datum: _verleihStart,
-      end_datum:   _verleihEnde
-    });
+    // Webhook: Drehscheibe angefragt
+    const _vbPayload = { name: _vbName, email: _vbEmail, start_datum: _vbStart, end_datum: _vbEnde };
+    if (_vbTel) _vbPayload.telefon   = _vbTel;
+    if (_vbMsg) _vbPayload.nachricht = _vbMsg;
+    sendeWebhook(siteData.webhooks.verleihAngefragt, _vbPayload);
     _verleihStart = null; _verleihEnde = null;
     ladeVerleihBuchungen();
   }
@@ -2524,6 +2535,8 @@ async function verleihBuchungSenden(e) {
 async function kalBuchungSenden(e) {
   e.preventDefault();
   if (!_selTermin || !_sb) return;
+  // Honeypot: Bot-Submissions abweisen (echte Nutzer lassen dieses Feld leer)
+  if (document.getElementById('b-hp')?.value) return;
 
   // Webhook-Daten VOR dem await sichern – _selTermin ist danach noch gesetzt,
   // aber kurs_typen kann je nach Supabase-Konfiguration Array oder Objekt sein
@@ -2600,10 +2613,6 @@ async function kalBuchungSenden(e) {
   }
 }
 
-/* ═══════════════════════════════════════════════════════
-   KONTAKTFORMULAR (Formspree)
-   ═══════════════════════════════════════════════════════ */
-
 // Sendet Daten an einen Make.com Webhook – ignoriert Fehler damit Buchung nicht scheitert
 async function sendeWebhook(url, daten) {
   if (!url) return;
@@ -2614,20 +2623,6 @@ async function sendeWebhook(url, daten) {
   }
 }
 
-function kontaktAbsenden(event) {
-  event.preventDefault();
-
-  const form = document.getElementById('kontakt-formular');
-  const name    = form.querySelector('[name="name"]')?.value    || '';
-  const email   = form.querySelector('[name="email"]')?.value   || '';
-  const nachricht = form.querySelector('[name="nachricht"]')?.value || '';
-
-  const betreff = encodeURIComponent('Kontaktanfrage von ' + name);
-  const body    = encodeURIComponent('Von: ' + name + '\nE-Mail: ' + email + '\n\n' + nachricht);
-  const mailto  = 'mailto:' + siteData.kontakt.email + '?subject=' + betreff + '&body=' + body;
-
-  window.location.href = mailto;
-}
 </script>
 
 </body>

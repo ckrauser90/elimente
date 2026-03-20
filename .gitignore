@@ -12,7 +12,11 @@ config.local.js
 .vscode/settings.json
 *.swp
 
-# Node / Playwright
+# Node / Playwright (Tests sind im Branch 'tests', nicht in main)
 node_modules/
 playwright-report/
 test-results/
+tests/
+package.json
+playwright.config.ts
+.github/workflows/e2e-tests.yml
