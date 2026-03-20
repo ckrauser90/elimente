@@ -2529,12 +2529,12 @@ async function kalBuchungSenden(e) {
   // aber kurs_typen kann je nach Supabase-Konfiguration Array oder Objekt sein
   const _whName    = document.getElementById('b-name').value.trim();
   const _whEmail   = document.getElementById('b-email').value.trim();
-  const _whTel     = document.getElementById('b-tel').value.trim()  || null;
-  const _whMsg     = document.getElementById('b-msg').value.trim()  || null;
-  const _whDatum   = _selDatum;
-  const _whUhrzeit = _selTermin.uhrzeit_start || null;
+  const _whTel     = document.getElementById('b-tel').value.trim()  || '';
+  const _whMsg     = document.getElementById('b-msg').value.trim()  || '';
+  const _whDatum   = _selDatum || '';
+  const _whUhrzeit = _selTermin.uhrzeit_start || '';
   const _ktData    = Array.isArray(_selTermin.kurs_typen) ? _selTermin.kurs_typen[0] : _selTermin.kurs_typen;
-  const _whKurs    = _ktData?.name || null;
+  const _whKurs    = _ktData?.name || '';
 
   const btn = document.getElementById('b-submit');
   btn.textContent = 'Wird gesendet …';
