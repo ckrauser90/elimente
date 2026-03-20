@@ -2593,15 +2593,10 @@ async function kalBuchungSenden(e) {
     ladeKursTermine(); // DB still im Hintergrund aktualisieren
 
     // Webhook: Buchung angefragt
-    sendeWebhook(siteData.webhooks.buchungAngefragt, {
-      name:     _whName,
-      email:    _whEmail,
-      telefon:  _whTel,
-      kurs:     _whKurs,
-      datum:    _whDatum,
-      uhrzeit:  _whUhrzeit,
-      nachricht: _whMsg
-    });
+    const _whPayload = { name: _whName, email: _whEmail, kurs: _whKurs, datum: _whDatum, uhrzeit: _whUhrzeit };
+    if (_whTel) _whPayload.telefon  = _whTel;
+    if (_whMsg) _whPayload.nachricht = _whMsg;
+    sendeWebhook(siteData.webhooks.buchungAngefragt, _whPayload);
   }
 }
 
