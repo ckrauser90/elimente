@@ -442,6 +442,7 @@ tr:hover td { background: var(--cream); }
       <h2>Kurstermine</h2>
       <button class="btn btn-primary" onclick="oeffneTerminModal()">+ Neuer Termin</button>
     </div>
+    <div id="termine-filter" style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap"></div>
     <div id="termine-liste"><div class="laden">Wird geladen …</div></div>
   </div>
 
@@ -620,6 +621,7 @@ let _kurstypen = [];
 let _termine   = [];
 let _buchungen = [];
 let _buchFilterTermin = null;
+let _termineFilter = 'alle'; // 'alle' | 'frei' | 'gebucht'
 
 // ── AUTHENTIFIZIERUNG ────────────────────────────────────
 
@@ -774,15 +776,32 @@ function renderTermineTabelle(liste) {
     </div>`;
 }
 
+function setTermineFilter(f) {
+  _termineFilter = f;
+  renderTermine();
+}
+
 function renderTermine() {
   const el = document.getElementById('termine-liste');
+  const filterEl = document.getElementById('termine-filter');
   if (!_termine.length) {
     el.innerHTML = '<p class="leer-hinweis">Noch keine Termine angelegt.</p>';
+    if (filterEl) filterEl.innerHTML = '';
     return;
   }
   const heute = new Date().toISOString().split('T')[0];
-  const kommend   = _termine.filter(t => t.datum >= heute).sort((a, b) => a.datum.localeCompare(b.datum));
-  const vergangen = _termine.filter(t => t.datum <  heute).sort((a, b) => b.datum.localeCompare(a.datum));
+  let kommend = _termine.filter(t => t.datum >= heute).sort((a, b) => a.datum.localeCompare(b.datum));
+  const vergangen = _termine.filter(t => t.datum < heute).sort((a, b) => b.datum.localeCompare(a.datum));
+
+  // Filter-Buttons rendern
+  if (filterEl) filterEl.innerHTML = `
+    <button class="filter-btn${_termineFilter === 'alle'    ? ' aktiv' : ''}" onclick="setTermineFilter('alle')">Alle (${kommend.length})</button>
+    <button class="filter-btn${_termineFilter === 'frei'    ? ' aktiv' : ''}" onclick="setTermineFilter('frei')">🟢 Frei (${kommend.filter(t => t.buchungen_count < 1).length})</button>
+    <button class="filter-btn${_termineFilter === 'gebucht' ? ' aktiv' : ''}" onclick="setTermineFilter('gebucht')">✅ Gebucht (${kommend.filter(t => t.buchungen_count > 0).length})</button>`;
+
+  // Filter anwenden
+  if (_termineFilter === 'frei')    kommend = kommend.filter(t => t.buchungen_count < 1);
+  if (_termineFilter === 'gebucht') kommend = kommend.filter(t => t.buchungen_count > 0);
 
   el.innerHTML = `
     ${renderTermineTabelle(kommend)}
