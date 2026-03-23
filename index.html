@@ -8,6 +8,8 @@
 <meta name="keywords" content="Töpferkurs Allgäu, Töpferkurs Kaltental, Keramik kaufen Allgäu, Töpferscheibe leihen Allgäu, Töpferei Allgäu">
 <meta name="author" content="Elimente – Töpferei Kaltental">
 <link rel="canonical" href="https://elimente.de/">
+<!-- OPTIMIERUNG: robots-Tag explizit setzen – signalisiert Suchmaschinen: Seite indexieren + Links folgen -->
+<meta name="robots" content="index, follow">
 
 <!-- Open Graph (für Social Media & Link-Vorschauen) -->
 <meta property="og:type" content="website">
@@ -1411,6 +1413,16 @@ footer a:hover { color: var(--moss); }
 }
 
 /* ─── COOKIE BANNER ─── */
+/* OPTIMIERUNG: Banner ist fixed am unteren Rand – kein Overlay, kein Vollbild-Block.
+   Body erhält padding-bottom wenn Banner sichtbar ist, damit kein Content dahinter versteckt wird. */
+body.cookie-banner-aktiv {
+  padding-bottom: 100px; /* Platz für den Banner */
+}
+@media (max-width: 600px) {
+  body.cookie-banner-aktiv {
+    padding-bottom: 160px; /* Auf Mobile ist der Banner höher (Text umbricht) */
+  }
+}
 #cookie-banner {
   display: none; /* wird per JS eingeblendet */
   position: fixed;
@@ -1464,6 +1476,37 @@ footer a:hover { color: var(--moss); }
 </head>
 <body>
 
+<!-- OPTIMIERUNG: noscript-Fallback für Suchmaschinen ohne JavaScript-Rendering.
+     Moderner Googlebot führt JS aus – dieser Block hilft älteren Crawlern und Social-Media-Bots. -->
+<noscript>
+  <style>
+    .noscript-content { max-width: 800px; margin: 2rem auto; padding: 1rem 2rem; font-family: Georgia, serif; color: #3E3832; }
+    .noscript-content h1 { font-size: 2rem; margin-bottom: 1rem; }
+    .noscript-content h2 { font-size: 1.4rem; margin: 1.5rem 0 0.5rem; }
+    .noscript-content p  { margin-bottom: 0.75rem; line-height: 1.6; }
+    .noscript-content ul { margin: 0.5rem 0 1rem 1.5rem; }
+  </style>
+  <div class="noscript-content">
+    <h1>Elimente – Töpferkurse, Keramik &amp; Töpferscheibe leihen im Allgäu</h1>
+    <p>Handgemachte Keramik, Töpferkurse und Töpferscheiben-Verleih in Kaltental im Allgäu, Bayern.</p>
+    <h2>Töpferkurse</h2>
+    <ul>
+      <li><strong>Schnupperkurs Töpfern</strong> – Anfänger · 3 Stunden · 45 €</li>
+      <li><strong>Grundkurs Drehen</strong> – Anfänger · 4 × 2,5 Std. · 160 €</li>
+      <li><strong>Glasur-Workshop</strong> – Fortgeschritten · 4 Stunden · 85 €</li>
+      <li><strong>Aufbautechnik</strong> – Alle Level · 3,5 Stunden · 55 €</li>
+    </ul>
+    <h2>Töpferscheibe leihen</h2>
+    <p>Professionelle Töpferscheibe leihen ab 150 € / Monat. Einweisung und Werkzeug-Set inklusive. Mindestmietdauer: 2 Wochen.</p>
+    <h2>Kontakt</h2>
+    <p>Ortsstraße 37, 87662 Kaltental, Allgäu<br>
+       E-Mail: info@elimente.com<br>
+       Telefon: +49 8344 99 27625</p>
+    <p><a href="impressum.html">Impressum</a> | <a href="datenschutz.html">Datenschutz</a> | <a href="agb.html">AGB</a></p>
+    <p><em>Bitte aktiviere JavaScript für die vollständige Website mit Buchungskalender und Bildergalerie.</em></p>
+  </div>
+</noscript>
+
 <!-- COOKIE BANNER (erscheint beim ersten Besuch) -->
 <div id="cookie-banner" role="dialog" aria-label="Cookie-Einstellungen">
   <p>
@@ -1499,11 +1542,15 @@ function cookieSetConsent(wert) {
 }
 
 function cookieBannerZeigen() {
+  // OPTIMIERUNG: Banner einblenden + Body-Padding damit Content nicht verdeckt wird
   document.getElementById('cookie-banner').style.display = 'flex';
+  document.body.classList.add('cookie-banner-aktiv');
 }
 
 function cookieBannerVerstecken() {
+  // OPTIMIERUNG: Banner ausblenden + Body-Padding entfernen
   document.getElementById('cookie-banner').style.display = 'none';
+  document.body.classList.remove('cookie-banner-aktiv');
 }
 
 function googleFontsLaden() {
@@ -1777,7 +1824,7 @@ function renderSite(data) {
       <div class="about-visual reveal">
         <div class="about-blob">
           ${_bilder.about
-            ? `<img src="${_bilder.about.url}" alt="${_bilder.about.alt_text || 'Werkstatt'}" class="about-foto">`
+            ? `<img src="${_bilder.about.url}" alt="${_bilder.about.alt_text || 'Werkstatt'}" class="about-foto" loading="lazy">` /* OPTIMIERUNG: lazy loading – erst laden wenn sichtbar */
             : '🤲'
           }
         </div>
@@ -1894,7 +1941,7 @@ function renderSite(data) {
     </div>
     <div class="rental-card reveal">
       ${_bilder.verleihBild
-        ? `<img src="${_bilder.verleihBild.url}" alt="${_bilder.verleihBild.alt_text || 'Töpferscheibe leihen'}" class="rental-bild">`
+        ? `<img src="${_bilder.verleihBild.url}" alt="${_bilder.verleihBild.alt_text || 'Töpferscheibe leihen'}" class="rental-bild" loading="lazy">` /* OPTIMIERUNG: lazy loading */
         : `<div class="rental-visual">🔄</div>`}
       <div class="rental-body">
         <h3>${d.verleih.title}</h3>
@@ -1956,7 +2003,7 @@ function renderSite(data) {
       ${_bilder.galerie.length > 0
         ? _bilder.galerie.map(b => `
             <div class="gallery-cell">
-              <img src="${b.url}" alt="${b.alt_text || 'Keramik'}" class="gallery-foto">
+              <img src="${b.url}" alt="${b.alt_text || 'Handgemachte Keramik aus der Töpferei Elimente im Allgäu'}" class="gallery-foto" loading="lazy"> <!-- OPTIMIERUNG: loading="lazy" + beschreibender alt-Text für SEO -->
               <div class="gallery-label">${b.alt_text || ''}</div>
             </div>
           `).join('')
@@ -2043,15 +2090,19 @@ let _verleihEnde     = null;
 let _kalMonat        = new Date(); _kalMonat.setDate(1);
 
 // ─── Seite initialisieren ──────────────────────────────────
-// Texte aus Supabase laden → siteData überschreiben → rendern
+// OPTIMIERUNG: Seite sofort mit Standard-Daten rendern, dann Supabase-Daten nachladen.
+// Vorher war die Seite leer bis alle Supabase-Anfragen abgeschlossen waren (1-3 Sekunden Verzögerung).
+// Das hatte zwei Probleme: schlechter First Contentful Paint + Cookie-Banner wirkte wie ein Vollbild-Block.
 (async function init() {
+  // OPTIMIERUNG: Sofort rendern – Content ist sofort sichtbar, kein Blank-Screen mehr
+  renderSite(siteData);
+
   const cfg = siteData.supabase;
   if (cfg && cfg.url && !cfg.url.startsWith('DEINE')) {
     _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
     await Promise.all([ladeSiteTexte(), ladeBilder(), ladeAktiveKurstypen(), ladeKursTermine()]); // Texte, Fotos, Kurstypen & Termine laden
+    renderSite(siteData); // Neu rendern mit aktualisierten Supabase-Daten (Texte, Bilder, Kurse)
   }
-
-  renderSite(siteData); // Mit ggf. aktualisierten Texten rendern
 
   // Nach dynamischem Rendern zum URL-Anker scrollen (z.B. #standort)
   if (location.hash) {

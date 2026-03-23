@@ -1,0 +1,141 @@
+# ═══════════════════════════════════════════════════════════
+# ELIMENTE – Dev Branch CI
+#
+# Läuft bei jedem Push auf "dev".
+# 1. Seite bauen (Keys einfügen, Etsy laden)
+# 2. E2E-Tests aus dem tests-Branch ausführen
+# 3. Nur wenn alle Tests grün: Artifact hochladen
+#
+# Artifact herunterladen (nach erfolgreichem Run):
+#   GitHub → Actions → letzter "Dev CI" Run → Artifacts → site-preview
+#   ZIP entpacken → index.html im Browser öffnen
+#
+# ── NEUE FUNKTIONEN ────────────────────────────────────────
+# Wenn eine neue Funktion in dev entwickelt wird, müssen auch
+# die Tests im tests-Branch aktualisiert werden:
+#
+#   1. Neue Funktion in dev entwickeln und committen
+#   2. Zum tests-Branch wechseln:
+#        git checkout tests
+#   3. Neue/angepasste Tests in tests/ hinzufügen
+#   4. Tests lokal prüfen (npx playwright test)
+#   5. Committen und pushen:
+#        git checkout dev && git push
+#   → Der CI holt sich die Tests automatisch aus tests-Branch
+# ═══════════════════════════════════════════════════════════
+
+name: Dev CI
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code auschecken (dev)
+        uses: actions/checkout@v4
+
+      - name: Supabase-Keys einfügen
+        run: |
+          for f in index.html admin.html impressum.html datenschutz.html agb.html; do
+            sed -i "s|DEINE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" "$f"
+            sed -i "s|DEIN_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_KEY }}|g" "$f"
+          done
+
+      - name: Etsy Produkte laden
+        env:
+          ETSY_API_KEY: ${{ secrets.ETSY_API_KEY }}
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request, json, os
+          key = os.environ.get('ETSY_API_KEY', '')
+          url = 'https://openapi.etsy.com/v3/application/shops/ELIMENTE/listings/active?limit=8&includes=Images'
+          req = urllib.request.Request(url, headers={'x-api-key': key})
+          try:
+              with urllib.request.urlopen(req, timeout=15) as r:
+                  data = r.read().decode('utf-8')
+              json.loads(data)
+          except Exception as e:
+              print(f'Etsy API Fehler (wird übersprungen): {e}')
+              data = '{"results":[]}'
+          with open('index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          html = html.replace('"ETSY_LISTINGS_PLACEHOLDER"', data)
+          with open('index.html', 'w', encoding='utf-8') as f:
+              f.write(html)
+          PYEOF
+
+      - name: Dummy config.local.js erstellen
+        run: echo "/* dev-ci – keys sind direkt im HTML */" > config.local.js
+
+      - name: HTML-Check (keine fehlenden Platzhalter)
+        run: |
+          if grep -r "DEINE_SUPABASE_URL\|DEIN_SUPABASE_ANON_KEY" *.html; then
+            echo "❌ Fehler: Supabase-Platzhalter nicht ersetzt!"
+            exit 1
+          fi
+          echo "✅ Alle Platzhalter ersetzt."
+
+      # ── Test-Dateien aus dem tests-Branch holen ──────────────
+      - name: Test-Dateien auschecken (tests-Branch)
+        uses: actions/checkout@v4
+        with:
+          ref: tests
+          path: _tests_branch  # In separaten Ordner laden
+
+      - name: Test-Dateien in Arbeitsverzeichnis kopieren
+        run: |
+          cp _tests_branch/package.json .
+          cp _tests_branch/playwright.config.ts .
+          cp -r _tests_branch/tests .
+          rm -rf _tests_branch
+
+      # ── Node.js + Playwright installieren ────────────────────
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Playwright-Browser installieren
+        run: npx playwright install chromium --with-deps
+
+      # ── E2E-Tests ausführen ───────────────────────────────────
+      - name: E2E-Tests ausführen
+        run: npx playwright test --project=chromium --reporter=line
+        env:
+          BASE_URL: http://localhost:3000
+          CI: true
+
+      # ── Testergebnis hochladen (auch bei Fehler, zur Analyse) ─
+      - name: Playwright-Report hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      # ── Nur bei grünen Tests: Site-Artifact hochladen ─────────
+      - name: Site-Preview hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: |
+            *.html
+            *.css
+            *.js
+            *.png
+            *.jpg
+            *.jpeg
+            *.svg
+            *.ico
+            bilder/**
+          retention-days: 7
