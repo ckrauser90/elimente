@@ -1398,6 +1398,16 @@ footer a:hover { color: var(--moss); }
     gap: 1.2rem;
     box-shadow: 0 12px 24px rgba(0,0,0,0.05);
   }
+  /* Hamburger-Icon wird zum X wenn das Menü offen ist */
+  nav.mobile-open .hamburger span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5.5px);
+  }
+  nav.mobile-open .hamburger span:nth-child(2) {
+    opacity: 0;
+  }
+  nav.mobile-open .hamburger span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5.5px);
+  }
 }
 
 @media (max-width: 640px) {
@@ -1410,6 +1420,10 @@ footer a:hover { color: var(--moss); }
   .hero-actions { flex-direction: column; align-items: flex-start; }
   footer { flex-direction: column; text-align: center; }
   footer a { margin: 0 0.5rem; }
+  /* Rental-Card: Innenabstand auf Smartphone reduzieren */
+  .rental-card { padding: 1.5rem; gap: 1.5rem; }
+  /* Kalender: auf sehr kleinen Screens etwas kompakter */
+  .kal-wrapper { padding: 1rem; }
 }
 
 /* ─── COOKIE BANNER ─── */
@@ -1523,6 +1537,8 @@ body.cookie-banner-aktiv {
 
 <div id="app"></div>
 
+<!-- Inhalte (Texte, Preise, Kontakt) → in site-data.js bearbeiten -->
+<script src="site-data.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════
    COOKIE & DATENSCHUTZ-VERWALTUNG
@@ -1607,130 +1623,6 @@ function cookieNurNotwendige() {
 })();
 
 /* ═══════════════════════════════════════════════════════
-   ✏️  HIER INHALTE ÄNDERN!
-   
-   Deine Frau kann hier ganz einfach Texte, Preise 
-   und Kontaktdaten anpassen. Einfach den Text 
-   zwischen den Anführungszeichen "..." ändern 
-   und die Datei speichern.
-   ═══════════════════════════════════════════════════════ */
-
-const siteData = {
-
-  // ── Supabase Verbindung ──
-  // Im Repo stehen hier Platzhalter. Der GitHub Actions Workflow setzt
-  // die echten Keys beim Deploy ein (aus den GitHub Secrets).
-  // Für lokale Tests: config.local.js mit den echten Keys anlegen.
-  supabase: {
-    url:     window.SUPABASE_URL     || "DEINE_SUPABASE_URL",
-    anonKey: window.SUPABASE_ANON_KEY || "DEIN_SUPABASE_ANON_KEY"
-  },
-
-  // ── Name & Slogan ──
-  name: "elimente",
-  tagline: "Keramik · Kurse · Verleih",
-
-  // ── Startseite ──
-  hero: {
-    label: "Handgemachte Keramik mit Herz",
-    headline: 'Erde, Wasser,\nFeuer — <span class="accent">Elimente.</span>',
-    description: "Entdecke handgefertigte Keramik, lerne Töpfern in meinen Kursen oder leihe dir eine Töpferscheibe für dein eigenes Projekt.",
-    buttonPrimary: "Kurse entdecken",
-    buttonSecondary: "Meine Geschichte"
-  },
-
-  // ── Über uns ──
-  about: {
-    quote: "Jedes Stück erzählt eine Geschichte — geformt von Hand, gebrannt mit Leidenschaft.",
-    text1: "Willkommen bei Elimente! Hier dreht sich alles um die Freude am Gestalten mit Ton. In meiner kleinen Werkstatt entstehen Unikate — von der Tasse bis zur Vase, jedes Stück mit Liebe von Hand gefertigt.",
-    text2: "Ob du selbst töpfern lernen möchtest, ein besonderes handgemachtes Stück suchst oder eine Töpferscheibe für dein eigenes Projekt brauchst — hier bist du richtig."
-  },
-
-  // ── Kurse (beliebig viele hinzufügen oder entfernen!) ──
-  kurse: [
-    {
-      name: "Schnupperkurs Töpfern",
-      level: "Anfänger",
-      schedule: "Samstags",
-      description: "Der perfekte Einstieg: Lerne die Grundlagen an der Scheibe und nimm dein erstes Stück mit nach Hause.",
-      price: "45 €",
-      duration: "3 Stunden"
-    },
-    {
-      name: "Grundkurs Drehen",
-      level: "Anfänger",
-      schedule: "4 Abende",
-      description: "In vier Abenden lernst du Zentrieren, Hochziehen und Formen. Glasur und Brennen inklusive!",
-      price: "160 €",
-      duration: "4 × 2,5 Std."
-    },
-    {
-      name: "Glasur-Workshop",
-      level: "Fortgeschritten",
-      schedule: "Auf Anfrage",
-      description: "Experimentiere mit verschiedenen Glasuren, Techniken und Brennverfahren für einzigartige Oberflächen.",
-      price: "85 €",
-      duration: "4 Stunden"
-    },
-    {
-      name: "Aufbautechnik",
-      level: "Alle Level",
-      schedule: "Sonntags",
-      description: "Ohne Scheibe — mit Platten, Wülsten und freiem Formen gestaltest du ganz individuelle Objekte.",
-      price: "55 €",
-      duration: "3,5 Stunden"
-    }
-  ],
-
-  // ── Galerie-Kategorien ──
-  galerie: [
-    { emoji: "🏺", label: "Vasen" },
-    { emoji: "☕", label: "Tassen & Becher" },
-    { emoji: "🥣", label: "Schalen" },
-    { emoji: "🪴", label: "Pflanzentöpfe" },
-    { emoji: "🕯️", label: "Kerzenhalter" },
-    { emoji: "✨", label: "Dekoration" }
-  ],
-  galerieHint: "Hier werden bald echte Fotos deiner Werke stehen — lade einfach Bilder hoch!",
-
-  // ── Töpferscheiben-Verleih ──
-  verleih: {
-    title: "Professionelle Töpferscheibe",
-    description: "Meine Scheibe ist ideal für zuhause — kompakt, leise und leistungsstark. Lieferung und Abholung inklusive im näheren Umkreis.",
-    priceMonth: "150 €",
-    aktiv: "true", // 'false' = Verleih deaktiviert (per Admin Toggle steuerbar)
-    perks: ["Selbstabholung", "Einweisung inklusive", "Werkzeug-Set dabei", "Ton auf Wunsch"]
-  },
-
-  // ── Kontaktdaten ──
-  kontakt: {
-    adresse: "Musterstraße 12, 12345 Musterstadt",
-    email: "hallo@elemente-keramik.de",
-    telefon: "0123 – 456 789 0",
-    instagram: "@elimen_te",
-    instagramUrl: "https://www.instagram.com/elimen_te",
-  },
-
-  // ── Webhooks (Make.com → Brevo) ──
-  // URLs werden im Admin-Bereich unter Texte → Webhooks eingetragen
-  webhooks: {
-    buchungAngefragt:   "https://hook.eu1.make.com/es4rs7xpk6r3khl6wk4fys9469apxyoy", // Kurs-Buchungsanfrage eingegangen
-    buchungBestaetigt:  "", // Kurs-Buchung vom Admin bestätigt
-    buchungStorniert:   "", // Kurs-Buchung storniert
-    verleihAngefragt:   "", // Verleih-Anfrage eingegangen
-    verleihBestaetigt:  "", // Verleih vom Admin bestätigt
-    verleihStorniert:   "", // Verleih storniert
-  },
-
-  // ── Footer ──
-  footer: {
-    copyright: "© 2026 Elimente Keramik",
-    links: ["Impressum", "Datenschutz", "AGB"]
-  }
-};
-
-
-/* ═══════════════════════════════════════════════════════
    AB HIER NICHTS ÄNDERN (außer du weißt was du tust!)
    ═══════════════════════════════════════════════════════ */
 
@@ -1808,7 +1700,7 @@ function renderSite(data) {
     <div class="hero-visual">
       <div class="hero-organic">
         ${_bilder.hero
-          ? `<img src="${_bilder.hero.url}" alt="${_bilder.hero.alt_text || 'Elimente Keramik'}" class="hero-foto">`
+          ? `<img src="${_bilder.hero.url}" alt="${_bilder.hero.alt_text || 'Elimente Keramik'}" class="hero-foto" loading="eager" decoding="async">`
           : `<div class="organic-shape organic-shape-1"></div>
              <div class="organic-shape organic-shape-2"></div>
              <div class="organic-shape organic-shape-3"></div>
@@ -1824,7 +1716,7 @@ function renderSite(data) {
       <div class="about-visual reveal">
         <div class="about-blob">
           ${_bilder.about
-            ? `<img src="${_bilder.about.url}" alt="${_bilder.about.alt_text || 'Werkstatt'}" class="about-foto" loading="lazy">` /* OPTIMIERUNG: lazy loading – erst laden wenn sichtbar */
+? `<img src="${_bilder.about.url}" alt="${_bilder.about.alt_text || 'Werkstatt'}" class="about-foto" loading="lazy" decoding="async">`
             : '🤲'
           }
         </div>
@@ -1847,19 +1739,19 @@ function renderSite(data) {
     </div>
     <div class="offer-cards">
       <div class="offer-card reveal">
-        ${_bilder.icons.kaufen ? `<img src="${_bilder.icons.kaufen.url}" alt="Keramik kaufen" class="offer-icon">` : `<span class="offer-emoji">🎨</span>`}
+        ${_bilder.icons.kaufen ? `<img src="${_bilder.icons.kaufen.url}" alt="Keramik kaufen" class="offer-icon" loading="lazy" decoding="async">` : `<span class="offer-emoji">🎨</span>`}
         <h3>Keramik kaufen</h3>
         <p>Jedes Stück ein Unikat — handgedreht und liebevoll glasiert. Von Tassen bis zu Vasen und Dekoration.</p>
         <a href="#shop" class="card-link">Zum Shop →</a>
       </div>
       <div class="offer-card reveal">
-        ${_bilder.icons.kurse ? `<img src="${_bilder.icons.kurse.url}" alt="Kurse" class="offer-icon">` : `<span class="offer-emoji">🤲</span>`}
+        ${_bilder.icons.kurse ? `<img src="${_bilder.icons.kurse.url}" alt="Kurse" class="offer-icon" loading="lazy" decoding="async">` : `<span class="offer-emoji">🤲</span>`}
         <h3>Kurse besuchen</h3>
         <p>In kleinen Gruppen lernst du die Kunst des Töpferns — ob Anfänger oder Fortgeschrittene.</p>
         <a href="#kurse" class="card-link">Kursangebot →</a>
       </div>
       <div class="offer-card reveal">
-        ${_bilder.icons.verleih ? `<img src="${_bilder.icons.verleih.url}" alt="Scheibe leihen" class="offer-icon">` : `<span class="offer-emoji">⚙️</span>`}
+        ${_bilder.icons.verleih ? `<img src="${_bilder.icons.verleih.url}" alt="Scheibe leihen" class="offer-icon" loading="lazy" decoding="async">` : `<span class="offer-emoji">⚙️</span>`}
         <h3>Scheibe leihen</h3>
         <p>Du hast Erfahrung? Leihe eine professionelle Töpferscheibe und arbeite flexibel bei dir zuhause.</p>
         <a href="#verleih" class="card-link">Mehr erfahren →</a>
@@ -1941,7 +1833,7 @@ function renderSite(data) {
     </div>
     <div class="rental-card reveal">
       ${_bilder.verleihBild
-        ? `<img src="${_bilder.verleihBild.url}" alt="${_bilder.verleihBild.alt_text || 'Töpferscheibe leihen'}" class="rental-bild" loading="lazy">` /* OPTIMIERUNG: lazy loading */
+? `<img src="${_bilder.verleihBild.url}" alt="${_bilder.verleihBild.alt_text || 'Töpferscheibe leihen'}" class="rental-bild" loading="lazy" decoding="async">`
         : `<div class="rental-visual">🔄</div>`}
       <div class="rental-body">
         <h3>${d.verleih.title}</h3>
@@ -2003,7 +1895,7 @@ function renderSite(data) {
       ${_bilder.galerie.length > 0
         ? _bilder.galerie.map(b => `
             <div class="gallery-cell">
-              <img src="${b.url}" alt="${b.alt_text || 'Handgemachte Keramik aus der Töpferei Elimente im Allgäu'}" class="gallery-foto" loading="lazy"> <!-- OPTIMIERUNG: loading="lazy" + beschreibender alt-Text für SEO -->
+<img src="${b.url}" alt="${b.alt_text || 'Keramik'}" class="gallery-foto" loading="lazy" decoding="async">
               <div class="gallery-label">${b.alt_text || ''}</div>
             </div>
           `).join('')
