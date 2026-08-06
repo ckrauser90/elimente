@@ -2,25 +2,25 @@
 <!-- OPTIMIERUNG: lastmod-Datum hinzugefügt – hilft Suchmaschinen frisch geänderte Seiten schneller neu zu indexieren -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://elimente.de/</loc>
+    <loc>https://elimente.com/</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://elimente.de/impressum.html</loc>
+    <loc>https://elimente.com/impressum.html</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://elimente.de/datenschutz.html</loc>
+    <loc>https://elimente.com/datenschutz.html</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://elimente.de/agb.html</loc>
+    <loc>https://elimente.com/agb.html</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
